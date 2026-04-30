@@ -1,0 +1,19 @@
+<label class="checkbox-wrapper" [class.checkbox-wrapper--checked]="checked()">
+  <input class="checkbox-input" type="checkbox" [checked]="checked()" (change)="onChange($event)" />
+  <span class="checkbox-custom">
+    @if (checked()) {
+      <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M1.27588 3.00002L3.85888 5.58302L8.72388 0.718018"
+          stroke="white"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    }
+  </span>
+  <span class="checkbox-label text-body-m" [class.checkbox-label--checked]="checked()">
+    <ng-content />
+  </span>
+</label>
