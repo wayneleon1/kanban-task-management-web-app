@@ -1,0 +1,80 @@
+:root {
+  --font-family: 'Plus Jakarta Sans', sans-serif;
+
+  /* Heading XL — Bold 24px / 30px */
+  --text-heading-xl-size: 24px;
+  --text-heading-xl-height: 30px;
+  --text-heading-xl-weight: 700;
+
+  /* Heading L — Bold 18px / 23px */
+  --text-heading-l-size: 18px;
+  --text-heading-l-height: 23px;
+  --text-heading-l-weight: 700;
+
+  /* Heading M — Bold 15px / 19px */
+  --text-heading-m-size: 15px;
+  --text-heading-m-height: 19px;
+  --text-heading-m-weight: 700;
+
+  /* Heading S — Bold 12px / 15px / 2.4px letter-spacing */
+  --text-heading-s-size: 12px;
+  --text-heading-s-height: 15px;
+  --text-heading-s-weight: 700;
+  --text-heading-s-spacing: 2.4px;
+
+  /* Body L — Medium 13px / 23px */
+  --text-body-l-size: 13px;
+  --text-body-l-height: 23px;
+  --text-body-l-weight: 500;
+
+  /* Body M — Bold 12px / 15px */
+  --text-body-m-size: 12px;
+  --text-body-m-height: 15px;
+  --text-body-m-weight: 700;
+}
+
+/* ── Utility Classes ── */
+
+.text-heading-xl {
+  font-family: var(--font-family);
+  font-size: var(--text-heading-xl-size);
+  line-height: var(--text-heading-xl-height);
+  font-weight: var(--text-heading-xl-weight);
+}
+
+.text-heading-l {
+  font-family: var(--font-family);
+  font-size: var(--text-heading-l-size);
+  line-height: var(--text-heading-l-height);
+  font-weight: var(--text-heading-l-weight);
+}
+
+.text-heading-m {
+  font-family: var(--font-family);
+  font-size: var(--text-heading-m-size);
+  line-height: var(--text-heading-m-height);
+  font-weight: var(--text-heading-m-weight);
+}
+
+.text-heading-s {
+  font-family: var(--font-family);
+  font-size: var(--text-heading-s-size);
+  line-height: var(--text-heading-s-height);
+  font-weight: var(--text-heading-s-weight);
+  letter-spacing: var(--text-heading-s-spacing);
+  text-transform: uppercase;
+}
+
+.text-body-l {
+  font-family: var(--font-family);
+  font-size: var(--text-body-l-size);
+  line-height: var(--text-body-l-height);
+  font-weight: var(--text-body-l-weight);
+}
+
+.text-body-m {
+  font-family: var(--font-family);
+  font-size: var(--text-body-m-size);
+  line-height: var(--text-body-m-height);
+  font-weight: var(--text-body-m-weight);
+}

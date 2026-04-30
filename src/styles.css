@@ -1,1 +1,38 @@
-/* You can add global styles to this file, and also import other style files */
+@import './styles/reset.css';
+@import './styles/variables.css';
+@import './styles/typography.css';
+
+/* ── Global Base Styles ── */
+html {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  transition:
+    background-color var(--transition-slow),
+    color var(--transition-slow);
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+/* ── Scrollbar Styling ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
