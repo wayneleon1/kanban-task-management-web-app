@@ -1,0 +1,23 @@
+<div class="input-group">
+  @if (label()) {
+    <label class="input-label text-body-m">{{ label() }}</label>
+  }
+  <div
+    class="input-wrapper"
+    [class.input-wrapper--error]="!!error()"
+    [class.input-wrapper--focus]="isFocused"
+  >
+    <input
+      class="input-field text-body-l"
+      [type]="type()"
+      [placeholder]="placeholder()"
+      [value]="value()"
+      (input)="onInput($event)"
+      (focus)="isFocused = true"
+      (blur)="isFocused = false"
+    />
+    @if (error()) {
+      <span class="input-error-msg text-body-l">{{ error() }}</span>
+    }
+  </div>
+</div>
