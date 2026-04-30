@@ -1,0 +1,31 @@
+.task-card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition:
+    background-color var(--transition-slow),
+    box-shadow var(--transition-fast);
+}
+
+.task-card:hover {
+  box-shadow: var(--shadow-modal);
+}
+
+.task-card:hover .task-card__title {
+  color: var(--color-primary);
+}
+
+.task-card__title {
+  color: var(--color-text-primary);
+  transition: color var(--transition-fast);
+  line-height: 1.4;
+}
+
+.task-card__subtasks {
+  color: var(--color-text-secondary);
+}
