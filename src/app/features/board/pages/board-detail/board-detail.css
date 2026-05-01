@@ -15,25 +15,6 @@
   max-width: 480px;
 }
 
-.board-empty__btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 18px 48px;
-  background-color: var(--color-primary);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-pill);
-  font-family: var(--font-family);
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-}
-
-.board-empty__btn:hover {
-  background-color: var(--color-primary-hover);
-}
-
 /* ── Board with Columns ── */
 .board-columns {
   display: flex;

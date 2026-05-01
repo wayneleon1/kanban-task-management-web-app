@@ -26,11 +26,7 @@
 
   <!-- ── Right: Actions ── -->
   <div class="header__actions">
-    <button
-      class="header__add-task-btn"
-      [class.header__add-task-btn--disabled]="!hasColumns"
-      [disabled]="!hasColumns"
-    >
+    <app-button variant="primary-lg" [disabled]="!hasColumns">
       <svg
         width="12"
         height="12"
@@ -41,7 +37,7 @@
         <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
       <span class="add-task-label">Add New Task</span>
-    </button>
+    </app-button>
 
     <!-- Three-dot menu -->
     <button class="header__menu-btn" aria-label="Board options">

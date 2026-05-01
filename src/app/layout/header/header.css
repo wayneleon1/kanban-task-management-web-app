@@ -55,34 +55,6 @@
   flex-shrink: 0;
 }
 
-/* ── Add Task Button ── */
-.header__add-task-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 14px var(--space-6);
-  background-color: var(--color-primary);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-pill);
-  font-family: var(--font-family);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 19px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color var(--transition-fast);
-}
-
-.header__add-task-btn:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
-}
-
-.header__add-task-btn--disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
-}
-
 /* ── Three-dot Menu Button ── */
 .header__menu-btn {
   display: flex;

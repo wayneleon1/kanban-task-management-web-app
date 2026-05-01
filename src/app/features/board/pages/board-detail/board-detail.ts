@@ -1,10 +1,11 @@
 import { Component, computed, effect, inject, input } from '@angular/core';
 import { BoardService } from '../../../../core/services/board.service';
 import { BoardColumn } from '../../components/board-column/board-column';
+import { Button } from "../../../../shared";
 
 @Component({
   selector: 'app-board-detail',
-  imports: [BoardColumn],
+  imports: [BoardColumn, Button],
   templateUrl: './board-detail.html',
   styleUrl: './board-detail.css',
 })
