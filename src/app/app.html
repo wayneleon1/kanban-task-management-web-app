@@ -1,1 +1,28 @@
-<router-outlet />
+<div class="app-shell">
+  <!-- ── Sidebar (conditionally rendered) ── -->
+  @if (layoutService.sidebarVisible()) {
+    <app-sidebar />
+  }
+
+  <!-- ── Main: Header + Board Content ── -->
+  <div class="app-main">
+    <app-header />
+    <main class="app-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
+<!-- ── Show Sidebar FAB (visible when sidebar is hidden) ── -->
+@if (!layoutService.sidebarVisible()) {
+  <button class="show-sidebar-fab" aria-label="Show sidebar" (click)="layoutService.showSidebar()">
+    <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M15.815 4.434A9.055 9.055 0 0 0 8 0C4.88 0 2.1 1.698.185 4.434a1.333 1.333 0 0 0 0 1.132C2.1 8.302 4.88 10 8 10c3.12 0 5.9-1.698 7.815-4.434a1.333 1.333 0 0 0 0-1.132ZM8 8.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm0-5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"
+        fill="#fff"
+      />
+    </svg>
+  </button>
+}

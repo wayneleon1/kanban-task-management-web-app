@@ -1,0 +1,9 @@
+<article class="task-card" role="button" tabindex="0">
+  <h3 class="task-card__title text-heading-m">{{ task().title }}</h3>
+
+  @if (totalSubtasks() > 0) {
+    <p class="task-card__subtasks text-body-m">
+      {{ completedSubtasks() }} of {{ totalSubtasks() }} subtasks
+    </p>
+  }
+</article>

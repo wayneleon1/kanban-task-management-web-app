@@ -1,0 +1,51 @@
+<header class="header">
+  <!-- ── Left: Logo (shown when sidebar hidden) + Board Name ── -->
+  <div class="header__left" [class.header__left--with-logo]="!layoutService.sidebarVisible()">
+    @if (!layoutService.sidebarVisible()) {
+      <!-- Logo shown inside header when sidebar is hidden -->
+      <div class="header__logo">
+        <svg
+          width="24"
+          height="25"
+          viewBox="0 0 24 25"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect width="6" height="25" rx="2" fill="#635FC7" />
+          <rect x="9" width="6" height="19" rx="2" fill="#635FC7" opacity="0.75" />
+          <rect x="18" width="6" height="12" rx="2" fill="#635FC7" opacity="0.5" />
+        </svg>
+        <span class="header__logo-text text-heading-xl">kanban</span>
+      </div>
+    }
+
+    <h1 class="header__board-name text-heading-xl">
+      {{ boardService.activeBoard()?.name ?? '' }}
+    </h1>
+  </div>
+
+  <!-- ── Right: Actions ── -->
+  <div class="header__actions">
+    <app-button variant="primary-lg" [disabled]="!hasColumns">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <span class="add-task-label">Add New Task</span>
+    </app-button>
+
+    <!-- Three-dot menu -->
+    <button class="header__menu-btn" aria-label="Board options">
+      <svg width="5" height="20" viewBox="0 0 5 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="2.308" cy="2.308" r="2.308" fill="#828FA3" />
+        <circle cx="2.308" cy="10" r="2.308" fill="#828FA3" />
+        <circle cx="2.308" cy="17.692" r="2.308" fill="#828FA3" />
+      </svg>
+    </button>
+  </div>
+</header>

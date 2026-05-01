@@ -1,0 +1,95 @@
+/* ── Header Shell ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 var(--space-8);
+  flex-shrink: 0;
+  transition: background-color var(--transition-slow);
+  gap: var(--space-4);
+}
+
+/* ── Left side ── */
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-width: 0;
+  flex: 1;
+}
+
+/* When sidebar is hidden, the logo area has a right border */
+.header__left--with-logo {
+  border-right: none; /* border is handled by the logo wrapper */
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-right: var(--space-8);
+  border-right: 1px solid var(--color-border);
+  height: var(--header-height);
+  flex-shrink: 0;
+}
+
+.header__logo-text {
+  color: var(--color-text-primary);
+}
+
+.header__board-name {
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Right side ── */
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+/* ── Three-dot Menu Button ── */
+.header__menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 50%;
+  transition: opacity var(--transition-fast);
+}
+
+.header__menu-btn:hover {
+  opacity: 0.7;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .header {
+    height: var(--header-height-mobile);
+    padding: 0 var(--space-4);
+  }
+
+  .add-task-label {
+    display: none;
+  }
+
+  .header__add-task-btn {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+  }
+}

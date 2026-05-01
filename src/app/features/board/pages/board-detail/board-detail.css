@@ -1,0 +1,61 @@
+/* ── Empty State ── */
+.board-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-8);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.board-empty__text {
+  color: var(--color-text-secondary);
+  max-width: 480px;
+}
+
+/* ── Board with Columns ── */
+.board-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* Scrollbar track for board */
+.board-columns::-webkit-scrollbar {
+  height: 8px;
+}
+
+/* ── New Column Placeholder ── */
+.new-column-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 280px;
+  /* Align with column content (below column header) */
+  margin-top: 39px;
+  height: calc(100vh - var(--header-height) - 39px - var(--space-12) - 16px);
+  background: linear-gradient(180deg, var(--color-surface-alt) 0%, rgba(228, 235, 250, 0.5) 100%);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+[data-theme='dark'] .new-column-placeholder {
+  background: linear-gradient(180deg, rgba(43, 44, 55, 0.25) 0%, rgba(43, 44, 55, 0.1) 100%);
+}
+
+.new-column-placeholder:hover .new-column-placeholder__text {
+  color: var(--color-primary);
+}
+
+.new-column-placeholder__text {
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
