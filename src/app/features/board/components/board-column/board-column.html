@@ -1,0 +1,16 @@
+<div class="board-column">
+  <!-- ── Column Header ── -->
+  <div class="column-header">
+    <span class="column-header__dot" [style.background-color]="column().color"></span>
+    <h2 class="column-header__title text-heading-s">
+      {{ column().name }} ({{ column().tasks.length }})
+    </h2>
+  </div>
+
+  <!-- ── Task Cards ── -->
+  <div class="column-tasks">
+    @for (task of column().tasks; track task.id) {
+      <app-task-card [task]="task" />
+    }
+  </div>
+</div>
