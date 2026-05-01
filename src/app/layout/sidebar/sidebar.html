@@ -31,20 +31,7 @@
             routerLinkActive="sidebar__board-item--active"
           >
             <!-- Board icon -->
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.889 2.889 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.221V8.444H1.333Zm8.889 6.222H13.11c.859 0 1.556-.697 1.556-1.556V8.445h-4.444v6.222Zm4.444-7.556V2.89c0-.859-.697-1.556-1.556-1.556H2.89c-.859 0-1.556.697-1.556 1.556v4.222H14.666Z"
-                fill="currentColor"
-              />
-            </svg>
+            <img src="assets/icon-board.svg" alt="" />
             <span class="text-heading-m">{{ board.name }}</span>
           </a>
         </li>
@@ -78,21 +65,7 @@
     <!-- Theme Toggle -->
     <div class="sidebar__theme-toggle">
       <!-- Sun icon -->
-      <svg
-        width="19"
-        height="19"
-        viewBox="0 0 19 19"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle cx="9.167" cy="9.167" r="3.75" fill="#828FA3" />
-        <path
-          d="M9.167.833v1.667M9.167 16.667v1.666M3.166 3.166l1.179 1.179M14.988 14.988l1.179 1.179M.833 9.167h1.667M16.667 9.167h1.666M3.166 15.167l1.179-1.179M14.988 3.346l1.179-1.179"
-          stroke="#828FA3"
-          stroke-width="1.667"
-          stroke-linecap="round"
-        />
-      </svg>
+      <img src="assets/icon-light-theme.svg" alt="icon-dark-theme" />
 
       <!-- Toggle switch -->
       <button
@@ -105,46 +78,12 @@
       </button>
 
       <!-- Moon icon -->
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M6 0C2.686 0 0 2.686 0 6s2.686 6 6 6c1.13 0 2.187-.312 3.082-.855C7.349 10.214 6.25 8.233 6.25 6c0-2.233 1.099-4.214 2.832-5.145A5.964 5.964 0 0 0 6 0Z"
-          fill="#828FA3"
-        />
-      </svg>
+      <img src="assets/icon-dark-theme.svg" alt="icon-dark-theme" />
     </div>
 
     <!-- Hide Sidebar -->
     <button class="sidebar__hide-btn text-heading-m" (click)="layoutService.hideSidebar()">
-      <svg
-        width="18"
-        height="16"
-        viewBox="0 0 18 16"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          fill-rule="evenodd"
-          clip-rule="evenodd"
-          d="M17.777 7.188C16.028 2.645 12.65 0 8.986 0 5.321 0 1.943 2.645.192 7.188a1.613 1.613 0 0 0 0 1.624C1.943 13.355 5.321 16 8.986 16c3.665 0 7.043-2.645 8.791-7.188a1.613 1.613 0 0 0 0-1.624ZM8.986 14.222c-2.984 0-5.87-2.07-7.447-6.222 1.577-4.152 4.463-6.222 7.447-6.222 2.985 0 5.87 2.07 7.448 6.222-1.577 4.152-4.463 6.222-7.448 6.222Zm0-10.444a4.222 4.222 0 1 0 0 8.444 4.222 4.222 0 0 0 0-8.444Zm0 6.666a2.444 2.444 0 1 1 0-4.888 2.444 2.444 0 0 1 0 4.888Z"
-          fill="#828FA3"
-        />
-        <!-- Slash through the eye -->
-        <line
-          x1="2"
-          y1="2"
-          x2="16"
-          y2="14"
-          stroke="#828FA3"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
-      </svg>
+      <img src="assets/icon-hide-sidebar.svg" alt="icon-dark-theme" />
       Hide Sidebar
     </button>
   </div>

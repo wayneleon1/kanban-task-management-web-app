@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Sidebar } from './layout/sidebar/sidebar/sidebar';
+import { Sidebar } from './layout/sidebar/sidebar';
 import { Header } from './layout/header/header';
 import { LayoutService } from './core/services/layout.service';
 
