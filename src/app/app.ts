@@ -1,12 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Sidebar } from './layout/sidebar/sidebar/sidebar';
+import { Header } from './layout/header/header';
+import { LayoutService } from './core/services/layout.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Sidebar, Header],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('kanban-task-management-web-app');
+  layoutService = inject(LayoutService);
 }

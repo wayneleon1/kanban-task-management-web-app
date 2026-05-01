@@ -1,0 +1,45 @@
+/* ── Layout Shell ── */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-bg);
+}
+
+/* ── Main content area (fills remaining space) ── */
+.app-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0; /* prevents flex overflow */
+  overflow: hidden;
+}
+
+/* ── Board content area (scrollable) ── */
+.app-content {
+  flex: 1;
+  overflow: hidden; /* board detail handles its own scroll */
+  position: relative;
+}
+
+/* ── Show Sidebar FAB ── */
+.show-sidebar-fab {
+  position: fixed;
+  bottom: 32px;
+  left: 0;
+  width: 56px;
+  height: 48px;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-fast);
+  z-index: 200;
+}
+
+.show-sidebar-fab:hover {
+  background-color: var(--color-primary-hover);
+}
