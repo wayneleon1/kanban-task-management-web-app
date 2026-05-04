@@ -8,7 +8,6 @@
 .input-label {
   color: var(--color-text-secondary);
 }
-
 [data-theme='dark'] .input-label {
   color: #ffffff;
 }
@@ -27,9 +26,13 @@
 .input-wrapper--focus {
   border-color: var(--color-input-border-focus);
 }
-
 .input-wrapper--error {
   border-color: var(--color-input-border-error);
+}
+
+/* Textarea wrapper alignment */
+.input-wrapper--multiline {
+  align-items: flex-start;
 }
 
 .input-field {
@@ -41,9 +44,15 @@
   outline: none;
   width: 100%;
 }
-
 .input-field::placeholder {
   color: var(--color-input-placeholder);
+}
+
+/* Textarea specifics */
+.input-field--textarea {
+  resize: vertical;
+  min-height: 112px;
+  line-height: 1.6;
 }
 
 .input-error-msg {

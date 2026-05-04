@@ -8,6 +8,9 @@ export type ButtonVariant = 'primary-lg' | 'primary-sm' | 'secondary' | 'destruc
   imports: [],
   templateUrl: './button.html',
   styleUrl: './button.css',
+  host: {
+    '[style.display]': '"contents"',
+  },
 })
 export class Button {
   variant = input<ButtonVariant>('primary-lg');

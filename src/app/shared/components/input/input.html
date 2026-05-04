@@ -6,18 +6,31 @@
     class="input-wrapper"
     [class.input-wrapper--error]="!!error()"
     [class.input-wrapper--focus]="isFocused"
+    [class.input-wrapper--multiline]="multiline()"
   >
-    <input
-      class="input-field text-body-l"
-      [type]="type()"
-      [placeholder]="placeholder()"
-      [value]="value()"
-      (input)="onInput($event)"
-      (focus)="isFocused = true"
-      (blur)="isFocused = false"
-    />
-    @if (error()) {
-      <span class="input-error-msg text-body-l">{{ error() }}</span>
+    @if (multiline()) {
+      <textarea
+        class="input-field input-field--textarea text-body-l"
+        [placeholder]="placeholder()"
+        [value]="value()"
+        [rows]="rows()"
+        (input)="onInput($event)"
+        (focus)="isFocused = true"
+        (blur)="isFocused = false"
+      ></textarea>
+    } @else {
+      <input
+        class="input-field text-body-l"
+        [type]="type()"
+        [placeholder]="placeholder()"
+        [value]="value()"
+        (input)="onInput($event)"
+        (focus)="isFocused = true"
+        (blur)="isFocused = false"
+      />
+      @if (error()) {
+        <span class="input-error-msg text-body-l">{{ error() }}</span>
+      }
     }
   </div>
 </div>
