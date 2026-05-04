@@ -1,0 +1,146 @@
+/* ── Backdrop ── */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--color-overlay);
+  z-index: 300;
+  /* Align card below header, centered horizontally */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: var(--header-height-mobile);
+}
+
+/* ── Card ── */
+.mobile-menu-card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+  width: 264px;
+  box-shadow: var(--shadow-modal);
+  animation: slide-down var(--transition-base) ease;
+  overflow: hidden;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Heading ── */
+.mobile-menu__heading {
+  color: var(--color-text-secondary);
+  padding: 0 var(--space-6) var(--space-5);
+}
+
+/* ── Board List ── */
+.mobile-menu__nav {
+  margin-bottom: var(--space-4);
+}
+
+.mobile-menu__board-list {
+  display: flex;
+  flex-direction: column;
+  padding-right: var(--space-6);
+}
+
+/* ── Board Item (link) ── */
+.mobile-menu__board-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 14px var(--space-6);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.mobile-menu__board-item:hover {
+  background-color: var(--color-surface-alt);
+  color: var(--color-primary);
+}
+
+.mobile-menu__board-item--active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.mobile-menu__board-item--active:hover {
+  background-color: var(--color-primary-hover);
+  color: #ffffff;
+}
+
+/* ── Create Board Button ── */
+.mobile-menu__create-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 14px var(--space-6);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: color var(--transition-fast);
+}
+
+.mobile-menu__create-btn:hover {
+  color: var(--color-primary-hover);
+}
+
+/* ── Theme Toggle ── */
+.mobile-menu__theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  margin: var(--space-2) var(--space-6) 0;
+  padding: var(--space-4) var(--space-8);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+/* ── Toggle Switch (reuse sidebar styles) ── */
+.theme-toggle__switch {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.theme-toggle__switch:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.theme-toggle__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform var(--transition-base);
+}
+
+.theme-toggle__switch--dark .theme-toggle__knob {
+  transform: translateX(20px);
+}

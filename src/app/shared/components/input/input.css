@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: var(--space-2);
   width: 100%;
+  /* background: #000; */
 }
 
 .input-label {

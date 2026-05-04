@@ -8,10 +8,20 @@ import { ViewTask } from './features/board/components/view-task/view-task';
 import { TaskForm } from './features/board/components/task-form/task-form';
 import { BoardForm } from './features/board/components/board-form/board-form';
 import { ConfirmDelete } from './shared/components/confirm-delete/confirm-delete';
+import { MobileBoardMenu } from './layout/mobile-board-menu/mobile-board-menu';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Sidebar, Header, ViewTask, TaskForm, BoardForm, ConfirmDelete],
+  imports: [
+    RouterOutlet,
+    Sidebar,
+    Header,
+    ViewTask,
+    TaskForm,
+    BoardForm,
+    ConfirmDelete,
+    MobileBoardMenu,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

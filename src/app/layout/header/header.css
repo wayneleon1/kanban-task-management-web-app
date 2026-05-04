@@ -1,3 +1,4 @@
+/* ── Shell ── */
 .header {
   display: flex;
   align-items: center;
@@ -9,8 +10,11 @@
   flex-shrink: 0;
   transition: background-color var(--transition-slow);
   gap: var(--space-4);
+  position: relative;
+  z-index: 200;
 }
 
+/* ── Left ── */
 .header__left {
   display: flex;
   align-items: center;
@@ -19,6 +23,7 @@
   flex: 1;
 }
 
+/* Desktop logo (when sidebar is hidden) */
 .header__logo {
   display: flex;
   align-items: center;
@@ -28,11 +33,11 @@
   height: var(--header-height);
   flex-shrink: 0;
 }
-
 .header__logo-text {
   color: var(--color-text-primary);
 }
 
+/* Desktop board name */
 .header__board-name {
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -40,7 +45,44 @@
   text-overflow: ellipsis;
 }
 
-/* ── Right ── */
+/* ── Mobile Logo ── */
+.header__mobile-logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Mobile Board Name Trigger ── */
+.header__mobile-board-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.header__mobile-board-trigger .header__board-name {
+  /* Allow truncation */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+/* Caret arrow */
+.header__mobile-caret {
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+.header__mobile-caret--open {
+  transform: rotate(180deg);
+}
+
+/* ── Right Actions ── */
 .header__actions {
   display: flex;
   align-items: center;
@@ -48,7 +90,29 @@
   flex-shrink: 0;
 }
 
-/* ── Board Three-dot Menu ── */
+/* ── Mobile circular "+" button ── */
+.header__mobile-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 32px;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: 40%;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  flex-shrink: 0;
+}
+.header__mobile-add-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+.header__mobile-add-btn--disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ── Three-dot Menu ── */
 .header__board-menu {
   position: relative;
 }
@@ -80,7 +144,6 @@
   min-width: 192px;
   z-index: 500;
 }
-
 [data-theme='dark'] .header__board-menu-dropdown {
   background-color: var(--color-bg);
 }
@@ -106,13 +169,17 @@
   color: var(--color-destructive-hover);
 }
 
-/* ── Responsive ── */
+/* ══════════════════════════════════════
+   RESPONSIVE — Mobile (≤ 768px)
+   ══════════════════════════════════════ */
 @media (max-width: 768px) {
   .header {
     height: var(--header-height-mobile);
     padding: 0 var(--space-4);
+    gap: var(--space-3);
   }
-  .add-task-label {
-    display: none;
+
+  .header__left {
+    gap: var(--space-3);
   }
 }

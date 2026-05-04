@@ -6,23 +6,22 @@
   background-color: var(--color-bg);
 }
 
-/* ── Main content area (fills remaining space) ── */
 .app-main {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 0; /* prevents flex overflow */
+  min-width: 0;
   overflow: hidden;
 }
 
-/* ── Board content area (scrollable) ── */
 .app-content {
   flex: 1;
-  overflow: hidden; /* board detail handles its own scroll */
+  overflow: hidden;
   position: relative;
+  height: calc(100vh - var(--header-height));
 }
 
-/* ── Show Sidebar FAB ── */
+/* ── Show Sidebar FAB (desktop only) ── */
 .show-sidebar-fab {
   position: fixed;
   bottom: 32px;
@@ -39,7 +38,13 @@
   transition: background-color var(--transition-fast);
   z-index: 200;
 }
-
 .show-sidebar-fab:hover {
   background-color: var(--color-primary-hover);
+}
+
+/* ── Mobile: adjust content height ── */
+@media (max-width: 768px) {
+  .app-content {
+    height: calc(100vh - var(--header-height-mobile));
+  }
 }

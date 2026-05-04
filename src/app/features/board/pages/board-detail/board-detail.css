@@ -26,7 +26,6 @@
   overflow-y: auto;
 }
 
-/* Scrollbar track for board */
 .board-columns::-webkit-scrollbar {
   height: 8px;
 }
@@ -37,7 +36,6 @@
   align-items: center;
   justify-content: center;
   min-width: 280px;
-  /* Align with column content (below column header) */
   margin-top: 39px;
   height: calc(100vh - var(--header-height) - 39px - var(--space-12) - 16px);
   background: linear-gradient(180deg, var(--color-surface-alt) 0%, rgba(228, 235, 250, 0.5) 100%);
@@ -58,4 +56,16 @@
 .new-column-placeholder__text {
   color: var(--color-text-secondary);
   transition: color var(--transition-fast);
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .board-columns {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .new-column-placeholder {
+    height: calc(100vh - var(--header-height-mobile) - 39px - var(--space-8));
+  }
 }
