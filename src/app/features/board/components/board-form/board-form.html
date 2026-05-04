@@ -1,0 +1,57 @@
+<app-modal>
+  <div class="board-form">
+    <h2 class="board-form__heading text-heading-l">{{ heading() }}</h2>
+
+    <!-- ── Board Name ── -->
+    <div class="board-form__field">
+      <app-input
+        [label]="nameLabel()"
+        placeholder="e.g. Web Design"
+        [value]="boardName()"
+        [error]="boardNameError()"
+        (valueChange)="boardName.set($event); boardNameError.set('')"
+      />
+    </div>
+
+    <!-- ── Columns ── -->
+    <div class="board-form__field">
+      <p class="board-form__label text-body-m">{{ colLabel() }}</p>
+      <div class="board-form__column-list">
+        @for (col of columns(); track col.id) {
+          <div class="board-form__column-row">
+            <app-input
+              placeholder="e.g. Todo"
+              [value]="col.name"
+              [error]="col.error"
+              (valueChange)="updateColumn(col.id, $event)"
+            />
+            <button
+              class="board-form__remove-btn"
+              type="button"
+              aria-label="Remove column"
+              (click)="removeColumn(col.id)"
+            >
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <path
+                  d="M12.728 2.272L2.272 12.728M2.272 2.272l10.456 10.456"
+                  stroke="#828FA3"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+
+      <app-button variant="secondary" [fullWidth]="true" (btnClick)="addColumn()">
+        + Add New Column
+      </app-button>
+    </div>
+
+    <!-- ── Submit ── -->
+    <app-button variant="primary-lg" [fullWidth]="true" (btnClick)="onSubmit()">
+      {{ submitLabel() }}
+    </app-button>
+  </div>
+</app-modal>

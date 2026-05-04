@@ -1,0 +1,15 @@
+<app-modal>
+  <div class="confirm-delete">
+    <h2 class="confirm-delete__title text-heading-l">{{ title() }}</h2>
+    <p class="confirm-delete__message text-body-l">{{ message() }}</p>
+
+    <div class="confirm-delete__actions">
+      <app-button variant="destructive" [fullWidth]="true" (btnClick)="onDelete()">
+        Delete
+      </app-button>
+      <app-button variant="secondary" [fullWidth]="true" (btnClick)="onCancel()">
+        Cancel
+      </app-button>
+    </div>
+  </div>
+</app-modal>

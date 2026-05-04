@@ -1,0 +1,78 @@
+<app-modal>
+  <div class="task-form">
+    <h2 class="task-form__heading text-heading-l">{{ heading() }}</h2>
+
+    <!-- ── Title ── -->
+    <div class="task-form__field">
+      <app-input
+        label="Title"
+        placeholder="e.g. Take coffee break"
+        [value]="title()"
+        [error]="titleError()"
+        (valueChange)="title.set($event); titleError.set('')"
+      />
+    </div>
+
+    <!-- ── Description ── -->
+    <div class="task-form__field">
+      <app-input
+        label="Description"
+        [multiline]="true"
+        placeholder="e.g. It's always good to take a break. This 15 minute break will recharge the batteries a little."
+        [value]="description()"
+        (valueChange)="description.set($event)"
+      />
+    </div>
+
+    <!-- ── Subtasks ── -->
+    <div class="task-form__field">
+      <p class="task-form__label text-body-m">Subtasks</p>
+      <div class="task-form__subtask-list">
+        @for (subtask of subtasks(); track subtask.id) {
+          <div class="task-form__subtask-row">
+            <app-input
+              placeholder="e.g. Make coffee"
+              [value]="subtask.title"
+              [error]="subtask.error"
+              (valueChange)="updateSubtask(subtask.id, $event)"
+            />
+            <button
+              class="task-form__remove-btn"
+              type="button"
+              aria-label="Remove subtask"
+              (click)="removeSubtask(subtask.id)"
+            >
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <path
+                  d="M12.728 2.272L2.272 12.728M2.272 2.272l10.456 10.456"
+                  stroke="#828FA3"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+
+      <app-button variant="secondary" [fullWidth]="true" (btnClick)="addSubtask()">
+        + Add New Subtask
+      </app-button>
+    </div>
+
+    <!-- ── Status ── -->
+    <div class="task-form__field">
+      <app-dropdown
+        label="Status"
+        [options]="statusOptions()"
+        [selected]="status()"
+        (selectedChange)="status.set($event)"
+      />
+    </div>
+
+    <!-- ── Submit ── -->
+    <app-button variant="primary-lg" [fullWidth]="true" (btnClick)="onSubmit()">
+      {{ submitLabel() }}
+    </app-button>
+  </div>
+</app-modal>

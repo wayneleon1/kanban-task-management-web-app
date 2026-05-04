@@ -12,13 +12,14 @@ export class Input {
   placeholder = input<string>('');
   value = input<string>('');
   error = input<string>('');
+  multiline = input<boolean>(false);
+  rows = input<number>(4);
 
   valueChange = output<string>();
-
   isFocused = false;
 
   onInput(event: Event): void {
-    const el = event.target as HTMLInputElement;
+    const el = event.target as HTMLInputElement | HTMLTextAreaElement;
     this.valueChange.emit(el.value);
   }
 }

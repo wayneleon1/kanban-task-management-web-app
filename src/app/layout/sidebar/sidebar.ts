@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { BoardService } from '../../core/services/board.service';
 import { LayoutService } from '../../core/services/layout.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { ModalService } from '../../core/services/modal.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -15,4 +16,5 @@ export class Sidebar {
   boardService = inject(BoardService);
   layoutService = inject(LayoutService);
   themeService = inject(ThemeService);
+  modalService = inject(ModalService);
 }

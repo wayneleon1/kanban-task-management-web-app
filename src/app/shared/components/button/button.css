@@ -23,6 +23,12 @@
   pointer-events: none;
 }
 
+/* ── Full Width ── */
+.btn--full-width {
+  width: 100%;
+  min-width: 0;
+}
+
 /* ── Primary Large ── */
 .btn--primary-lg {
   background-color: var(--color-primary);

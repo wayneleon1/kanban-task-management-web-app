@@ -1,10 +1,7 @@
 <div class="app-shell">
-  <!-- ── Sidebar (conditionally rendered) ── -->
   @if (layoutService.sidebarVisible()) {
     <app-sidebar />
   }
-
-  <!-- ── Main: Header + Board Content ── -->
   <div class="app-main">
     <app-header />
     <main class="app-content">
@@ -13,10 +10,10 @@
   </div>
 </div>
 
-<!-- ── Show Sidebar FAB (visible when sidebar is hidden) ── -->
+<!-- Show Sidebar FAB -->
 @if (!layoutService.sidebarVisible()) {
   <button class="show-sidebar-fab" aria-label="Show sidebar" (click)="layoutService.showSidebar()">
-    <svg width="16" height="11" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
       <path
         fill-rule="evenodd"
         clip-rule="evenodd"
@@ -25,4 +22,29 @@
       />
     </svg>
   </button>
+}
+
+<!-- ── Modals ── -->
+@switch (modalService.state().type) {
+  @case ('view-task') {
+    <app-view-task />
+  }
+  @case ('add-task') {
+    <app-task-form />
+  }
+  @case ('edit-task') {
+    <app-task-form />
+  }
+  @case ('delete-task') {
+    <app-confirm-delete />
+  }
+  @case ('add-board') {
+    <app-board-form />
+  }
+  @case ('edit-board') {
+    <app-board-form />
+  }
+  @case ('delete-board') {
+    <app-confirm-delete />
+  }
 }
