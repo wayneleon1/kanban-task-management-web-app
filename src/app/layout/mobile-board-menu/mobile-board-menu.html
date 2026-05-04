@@ -1,0 +1,83 @@
+<!-- Backdrop -->
+<div class="mobile-menu-backdrop" (click)="layoutService.closeMobileBoardMenu()">
+  <!-- Card — stop propagation so clicking inside doesn't close -->
+  <div class="mobile-menu-card" (click)="$event.stopPropagation()">
+    <!-- ── Board List ── -->
+    <p class="mobile-menu__heading text-heading-s">
+      All Boards ({{ boardService.boards().length }})
+    </p>
+
+    <nav class="mobile-menu__nav">
+      <ul class="mobile-menu__board-list">
+        @for (board of boardService.boards(); track board.id) {
+          <li>
+            <a
+              class="mobile-menu__board-item text-heading-m"
+              [routerLink]="['/boards', board.id]"
+              routerLinkActive="mobile-menu__board-item--active"
+              (click)="onBoardSelect()"
+            >
+              <!-- Board icon -->
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.889 2.889 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.221V8.444H1.333Zm8.889 6.222H13.11c.859 0 1.556-.697 1.556-1.556V8.445h-4.444v6.222Zm4.444-7.556V2.89c0-.859-.697-1.556-1.556-1.556H2.89c-.859 0-1.556.697-1.556 1.556v4.222H14.666Z"
+                  fill="currentColor"
+                />
+              </svg>
+              {{ board.name }}
+            </a>
+          </li>
+        }
+
+        <!-- Create New Board -->
+        <li>
+          <button class="mobile-menu__create-btn text-heading-m" (click)="onCreateBoard()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.889 2.889 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.221V8.444H1.333Zm8.889 6.222H13.11c.859 0 1.556-.697 1.556-1.556V8.445h-4.444v6.222Zm4.444-7.556V2.89c0-.859-.697-1.556-1.556-1.556H2.89c-.859 0-1.556.697-1.556 1.556v4.222H14.666Z"
+                fill="currentColor"
+              />
+            </svg>
+            + Create New Board
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- ── Theme Toggle ── -->
+    <div class="mobile-menu__theme-toggle">
+      <!-- Sun -->
+      <svg width="19" height="19" viewBox="0 0 19 19" fill="none">
+        <circle cx="9.167" cy="9.167" r="3.75" fill="#828FA3" />
+        <path
+          d="M9.167.833v1.667M9.167 16.667v1.666M3.166 3.166l1.179 1.179M14.988 14.988l1.179 1.179M.833 9.167h1.667M16.667 9.167h1.666M3.166 15.167l1.179-1.179M14.988 3.346l1.179-1.179"
+          stroke="#828FA3"
+          stroke-width="1.667"
+          stroke-linecap="round"
+        />
+      </svg>
+
+      <!-- Toggle Switch -->
+      <button
+        class="theme-toggle__switch"
+        [class.theme-toggle__switch--dark]="themeService.theme() === 'dark'"
+        (click)="themeService.toggleTheme()"
+        aria-label="Toggle theme"
+      >
+        <span class="theme-toggle__knob"></span>
+      </button>
+
+      <!-- Moon -->
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path
+          d="M6 0C2.686 0 0 2.686 0 6s2.686 6 6 6c1.13 0 2.187-.312 3.082-.855C7.349 10.214 6.25 8.233 6.25 6c0-2.233 1.099-4.214 2.832-5.145A5.964 5.964 0 0 0 6 0Z"
+          fill="#828FA3"
+        />
+      </svg>
+    </div>
+  </div>
+</div>
