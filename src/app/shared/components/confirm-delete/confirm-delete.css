@@ -17,3 +17,10 @@
   display: flex;
   gap: var(--space-4);
 }
+
+/* ── Mobile: stack buttons vertically ── */
+@media (max-width: 768px) {
+  .confirm-delete__actions {
+    flex-direction: column;
+  }
+}

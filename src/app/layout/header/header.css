@@ -96,10 +96,10 @@
   align-items: center;
   justify-content: center;
   width: 48px;
-  height: 48px;
+  height: 32px;
   background-color: var(--color-primary);
   border: none;
-  border-radius: 50%;
+  border-radius: 40%;
   cursor: pointer;
   transition: background-color var(--transition-fast);
   flex-shrink: 0;

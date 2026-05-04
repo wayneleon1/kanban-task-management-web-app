@@ -169,3 +169,9 @@
   background-color: var(--color-surface-alt);
   color: var(--color-primary);
 }
+
+@media (max-width: 768px) {
+  :host {
+    display: none !important;
+  }
+}

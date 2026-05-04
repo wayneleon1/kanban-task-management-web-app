@@ -7,7 +7,6 @@
   flex-shrink: 0;
 }
 
-/* ── Column Header ── */
 .column-header {
   display: flex;
   align-items: center;
@@ -30,7 +29,6 @@
   text-overflow: ellipsis;
 }
 
-/* ── Tasks list ── */
 .column-tasks {
   display: flex;
   flex-direction: column;
@@ -41,5 +39,13 @@
 }
 
 .column-tasks::-webkit-scrollbar {
-  width: 0; /* hide scrollbar — board-columns handles horizontal scroll */
+  width: 0;
+}
+
+/* ── Mobile: slightly narrower cards ── */
+@media (max-width: 768px) {
+  .board-column {
+    min-width: 280px;
+    max-width: 280px;
+  }
 }

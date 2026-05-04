@@ -1,7 +1,9 @@
 <div class="app-shell">
-  @if (layoutService.sidebarVisible()) {
+  <!-- Sidebar — desktop only, hidden on mobile -->
+  @if (layoutService.sidebarVisible() && !layoutService.isMobile()) {
     <app-sidebar />
   }
+
   <div class="app-main">
     <app-header />
     <main class="app-content">
@@ -10,8 +12,8 @@
   </div>
 </div>
 
-<!-- Show Sidebar FAB -->
-@if (!layoutService.sidebarVisible()) {
+<!-- ── Show Sidebar FAB (desktop only, when sidebar is hidden) ── -->
+@if (!layoutService.sidebarVisible() && !layoutService.isMobile()) {
   <button class="show-sidebar-fab" aria-label="Show sidebar" (click)="layoutService.showSidebar()">
     <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
       <path
@@ -22,6 +24,11 @@
       />
     </svg>
   </button>
+}
+
+<!-- ── Mobile Board Select Menu ── -->
+@if (layoutService.mobileBoardMenuOpen()) {
+  <app-mobile-board-menu />
 }
 
 <!-- ── Modals ── -->

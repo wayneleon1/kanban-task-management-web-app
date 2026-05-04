@@ -12,7 +12,7 @@ import { ModalService } from '../../core/services/modal.service';
   templateUrl: './mobile-board-menu.html',
   styleUrl: './mobile-board-menu.css',
 })
-export class MobileBoardMenuComponent {
+export class MobileBoardMenu {
   boardService = inject(BoardService);
   layoutService = inject(LayoutService);
   themeService = inject(ThemeService);
