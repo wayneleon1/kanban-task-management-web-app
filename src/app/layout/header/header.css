@@ -1,4 +1,3 @@
-/* ── Header Shell ── */
 .header {
   display: flex;
   align-items: center;
@@ -12,18 +11,12 @@
   gap: var(--space-4);
 }
 
-/* ── Left side ── */
 .header__left {
   display: flex;
   align-items: center;
   gap: var(--space-6);
   min-width: 0;
   flex: 1;
-}
-
-/* When sidebar is hidden, the logo area has a right border */
-.header__left--with-logo {
-  border-right: none; /* border is handled by the logo wrapper */
 }
 
 .header__logo {
@@ -47,7 +40,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── Right side ── */
+/* ── Right ── */
 .header__actions {
   display: flex;
   align-items: center;
@@ -55,7 +48,11 @@
   flex-shrink: 0;
 }
 
-/* ── Three-dot Menu Button ── */
+/* ── Board Three-dot Menu ── */
+.header__board-menu {
+  position: relative;
+}
+
 .header__menu-btn {
   display: flex;
   align-items: center;
@@ -66,12 +63,47 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  border-radius: 50%;
   transition: opacity var(--transition-fast);
 }
-
 .header__menu-btn:hover {
   opacity: 0.7;
+}
+
+.header__board-menu-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-4));
+  right: 0;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  padding: var(--space-4) 0;
+  min-width: 192px;
+  z-index: 500;
+}
+
+[data-theme='dark'] .header__board-menu-dropdown {
+  background-color: var(--color-bg);
+}
+
+.board-menu-option {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+.board-menu-option:hover {
+  color: var(--color-text-primary);
+}
+.board-menu-option--destructive {
+  color: var(--color-destructive);
+}
+.board-menu-option--destructive:hover {
+  color: var(--color-destructive-hover);
 }
 
 /* ── Responsive ── */
@@ -80,16 +112,7 @@
     height: var(--header-height-mobile);
     padding: 0 var(--space-4);
   }
-
   .add-task-label {
     display: none;
-  }
-
-  .header__add-task-btn {
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    border-radius: 50%;
-    justify-content: center;
   }
 }

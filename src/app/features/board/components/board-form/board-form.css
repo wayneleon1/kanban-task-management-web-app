@@ -1,0 +1,50 @@
+.board-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.board-form__heading {
+  color: var(--color-text-primary);
+}
+
+.board-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.board-form__label {
+  color: var(--color-text-secondary);
+}
+[data-theme='dark'] .board-form__label {
+  color: #ffffff;
+}
+
+.board-form__column-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.board-form__column-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.board-form__remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.board-form__remove-btn:hover svg path {
+  stroke: var(--color-destructive);
+}
