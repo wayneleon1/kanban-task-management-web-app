@@ -1,0 +1,19 @@
+.confirm-delete {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.confirm-delete__title {
+  color: var(--color-destructive);
+}
+
+.confirm-delete__message {
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.confirm-delete__actions {
+  display: flex;
+  gap: var(--space-4);
+}
