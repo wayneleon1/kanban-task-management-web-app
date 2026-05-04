@@ -1,8 +1,8 @@
-import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Component, inject, signal, ElementRef } from '@angular/core';
 import { BoardService } from '../../core/services/board.service';
 import { LayoutService } from '../../core/services/layout.service';
-import { Button } from '../../shared';
 import { ModalService } from '../../core/services/modal.service';
+import { Button } from '../../shared/components/button/button';
 
 @Component({
   selector: 'app-header',

@@ -1,7 +1,10 @@
 <header class="header">
-  <!-- ── Left ── -->
-  <div class="header__left" [class.header__left--with-logo]="!layoutService.sidebarVisible()">
-    @if (!layoutService.sidebarVisible()) {
+  <!-- ══════════════════════════════════════
+       DESKTOP LEFT — Logo + Board Name
+       ══════════════════════════════════════ -->
+  <div class="header__left" [class.header__left--no-sidebar]="!layoutService.sidebarVisible()">
+    <!-- Logo: only shown when sidebar is hidden (desktop) -->
+    @if (!layoutService.isMobile() && !layoutService.sidebarVisible()) {
       <div class="header__logo">
         <svg width="24" height="25" viewBox="0 0 24 25" fill="none">
           <rect width="6" height="25" rx="2" fill="#635FC7" />
@@ -11,21 +14,77 @@
         <span class="header__logo-text text-heading-xl">kanban</span>
       </div>
     }
-    <h1 class="header__board-name text-heading-xl">
-      {{ boardService.activeBoard()?.name ?? '' }}
-    </h1>
+
+    <!-- ══════════════════════════════════════
+         MOBILE LEFT — Logo bars + Board name + Caret
+         ══════════════════════════════════════ -->
+    @if (layoutService.isMobile()) {
+      <!-- Logo bars icon only on mobile -->
+      <div class="header__mobile-logo">
+        <svg width="24" height="25" viewBox="0 0 24 25" fill="none">
+          <rect width="6" height="25" rx="2" fill="#635FC7" />
+          <rect x="9" width="6" height="19" rx="2" fill="#635FC7" opacity="0.75" />
+          <rect x="18" width="6" height="12" rx="2" fill="#635FC7" opacity="0.5" />
+        </svg>
+      </div>
+
+      <!-- Board name + caret → opens mobile board menu -->
+      <button
+        class="header__mobile-board-trigger"
+        (click)="layoutService.toggleMobileBoardMenu(); $event.stopPropagation()"
+        aria-label="Select board"
+      >
+        <h1 class="header__board-name text-heading-l">
+          {{ boardService.activeBoard()?.name ?? '' }}
+        </h1>
+        <!-- Caret -->
+        <svg
+          class="header__mobile-caret"
+          [class.header__mobile-caret--open]="layoutService.mobileBoardMenuOpen()"
+          width="10"
+          height="7"
+          viewBox="0 0 10 7"
+          fill="none"
+        >
+          <path d="M1 1L5 5L9 1" stroke="#635FC7" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    } @else {
+      <!-- Desktop board name (static) -->
+      <h1 class="header__board-name text-heading-xl">
+        {{ boardService.activeBoard()?.name ?? '' }}
+      </h1>
+    }
   </div>
 
-  <!-- ── Right ── -->
+  <!-- ══════════════════════════════════════
+       RIGHT — Actions
+       ══════════════════════════════════════ -->
   <div class="header__actions">
-    <app-button variant="primary-lg" [disabled]="!hasColumns" (btnClick)="openAddTask()">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-      </svg>
-      <span class="add-task-label">Add New Task</span>
-    </app-button>
+    <!-- Desktop: full text button -->
+    @if (!layoutService.isMobile()) {
+      <app-button variant="primary-lg" [disabled]="!hasColumns" (btnClick)="openAddTask()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <span>Add New Task</span>
+      </app-button>
+    } @else {
+      <!-- Mobile: circular "+" icon button -->
+      <button
+        class="header__mobile-add-btn"
+        [class.header__mobile-add-btn--disabled]="!hasColumns"
+        [disabled]="!hasColumns"
+        aria-label="Add new task"
+        (click)="openAddTask()"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M6 0v12M0 6h12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+    }
 
-    <!-- Board three-dot menu -->
+    <!-- Three-dot menu (both desktop and mobile) -->
     <div class="header__board-menu">
       <button
         class="header__menu-btn"
