@@ -1,12 +1,29 @@
-/* ── Page wrapper — fills the board content area ── */
+/*
+  :host targets the <app-task-form-page> element in the DOM.
+
+  display: block  → custom elements are inline by default; block lets height work
+  height: 100%    → fills the .app-content container exactly
+  overflow-y: auto → THIS component scrolls, not the parent
+
+  Because the host has a fixed height (100% of parent) and handles its own
+  overflow, the parent's overflow: hidden never clips this component's scroll.
+*/
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+}
+
+/* ── Inner wrapper — no longer needs its own overflow ── */
 .task-form-page {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  min-height: 100%;
+  min-height: 100%; /* Ensures centering works when content is short */
   padding: var(--space-10) var(--space-4);
   background-color: var(--color-bg);
-  overflow-y: auto;
+  /* overflow-y removed — :host handles scrolling now */
 }
 
 /* ── Form Card ── */
@@ -32,14 +49,12 @@
   gap: var(--space-6);
 }
 
-/* ── Field container ── */
 .form-field {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-/* ── Label row (label + inline error) ── */
 .form-field__label-row {
   display: flex;
   align-items: center;
@@ -74,9 +89,7 @@
   color: var(--color-destructive);
 }
 
-/* ══════════════════════════════════════════
-   NATIVE INPUTS — styled with design tokens
-   ══════════════════════════════════════════ */
+/* ── Inputs ── */
 .form-input {
   width: 100%;
   padding: 8px var(--space-4);
@@ -94,11 +107,9 @@
 .form-input:focus {
   border-color: var(--color-input-border-focus);
 }
-
 .form-input--error {
   border-color: var(--color-input-border-error) !important;
 }
-
 .form-input::placeholder {
   color: var(--color-input-placeholder);
 }
@@ -109,12 +120,11 @@
   line-height: 1.6;
 }
 
-/* Date input color on dark mode */
 [data-theme='dark'] input[type='date']::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 
-/* ── Select / Dropdown ── */
+/* ── Select ── */
 .select-wrapper {
   position: relative;
   display: flex;
@@ -124,14 +134,14 @@
 .form-select {
   width: 100%;
   padding: 8px var(--space-4);
-  padding-right: 36px; /* Space for custom arrow */
+  padding-right: 36px;
   background-color: var(--color-input-bg);
   color: var(--color-text-primary);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius-sm);
   font-family: var(--font-family);
   font-size: var(--text-body-l-size);
-  appearance: none; /* Hide native arrow */
+  appearance: none;
   cursor: pointer;
   outline: none;
   transition: border-color var(--transition-fast);
@@ -140,7 +150,6 @@
 .form-select:focus {
   border-color: var(--color-input-border-focus);
 }
-
 .select-wrapper--error .form-select {
   border-color: var(--color-input-border-error);
 }
@@ -149,7 +158,6 @@
   position: absolute;
   right: var(--space-4);
   pointer-events: none;
-  flex-shrink: 0;
 }
 
 /* ── Subtask rows ── */
@@ -180,19 +188,14 @@
 .subtask-input-wrapper:focus-within {
   border-color: var(--color-input-border-focus);
 }
-
 .subtask-input-wrapper--error {
   border-color: var(--color-input-border-error);
 }
 
 .subtask-input {
   flex: 1;
-  border: none !important; /* Border on wrapper, not input */
+  border: none !important;
   padding: 8px var(--space-4);
-}
-
-.subtask-input:focus {
-  border-color: transparent;
 }
 
 .subtask-inline-error {
@@ -215,38 +218,33 @@
   cursor: pointer;
   padding: 0;
 }
-
 .subtask-remove-btn:hover svg path {
   stroke: var(--color-destructive);
 }
 
-/* ── Action buttons ── */
+/* ── Actions ── */
 .form-actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
-/* ── Reuse design system button classes ── */
+/* ── Button styles ── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
   border: none;
   border-radius: var(--radius-pill);
   font-family: var(--font-family);
   font-weight: 700;
   cursor: pointer;
   transition: background-color var(--transition-fast);
-  white-space: nowrap;
 }
-
 .btn--full-width {
   width: 100%;
   min-width: 0;
 }
-
 .btn--primary-lg {
   background-color: var(--color-primary);
   color: #ffffff;
@@ -257,7 +255,6 @@
 .btn--primary-lg:hover {
   background-color: var(--color-primary-hover);
 }
-
 .btn--secondary {
   background-color: var(--color-btn-secondary-bg);
   color: var(--color-btn-secondary-text);
@@ -273,12 +270,10 @@
 @media (max-width: 768px) {
   .task-form-page {
     padding: var(--space-6) var(--space-4);
-    align-items: flex-start;
   }
 
   .task-form-page__card {
     padding: var(--space-6);
     box-shadow: none;
-    border-radius: var(--radius-md);
   }
 }

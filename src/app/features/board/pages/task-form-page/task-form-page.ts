@@ -220,7 +220,7 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
     }
 
     this.submitted = true;
-    this.form.markAsPristine(); // Clear dirty before navigation
+    this.form.markAsPristine();
     this.router.navigate(['/boards', boardId]);
   }
 
