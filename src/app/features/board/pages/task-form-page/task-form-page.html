@@ -1,0 +1,140 @@
+<div class="task-form-page">
+  <div class="task-form-page__card">
+    <h2 class="form-heading text-heading-l">{{ heading() }}</h2>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form">
+      <div class="form-field">
+        <div class="form-field__label-row">
+          <label class="form-label text-body-m" for="title">Title</label>
+          @if (titleCtrl.invalid && titleCtrl.touched) {
+            <span class="form-error-inline text-body-l">{{ getTitleError() }}</span>
+          }
+        </div>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          class="form-input text-body-l"
+          [class.form-input--error]="titleCtrl.invalid && titleCtrl.touched"
+          placeholder="e.g. Take coffee break"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- ── Description ── -->
+      <div class="form-field">
+        <label class="form-label text-body-m" for="description">Description</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-input form-input--textarea text-body-l"
+          [class.form-input--error]="descCtrl.invalid && descCtrl.touched"
+          placeholder="e.g. It's always good to take a break. This 15 minute break will recharge the batteries a little."
+          rows="4"
+        ></textarea>
+        @if (descCtrl.invalid && descCtrl.touched) {
+          <span class="form-error text-body-l">{{ getDescError() }}</span>
+        }
+      </div>
+
+      <!-- ── Due Date ── -->
+      <div class="form-field">
+        <label class="form-label text-body-m" for="dueDate">
+          Due Date <span class="form-label--optional">(optional)</span>
+        </label>
+        <input
+          id="dueDate"
+          type="date"
+          formControlName="dueDate"
+          class="form-input text-body-l"
+          [class.form-input--error]="dateCtrl.invalid && dateCtrl.touched"
+        />
+        @if (dateCtrl.invalid && dateCtrl.touched) {
+          <span class="form-error text-body-l">{{ getDateError() }}</span>
+        }
+      </div>
+
+      <!-- ── Subtasks — FormArray ── -->
+      <div class="form-field">
+        <label class="form-label text-body-m">Subtasks</label>
+
+        <div class="subtask-list" formArrayName="subtasks">
+          @for (ctrl of subtasksArr.controls; track $index; let i = $index) {
+            <div class="subtask-row" [formGroupName]="i">
+              <div
+                class="subtask-input-wrapper"
+                [class.subtask-input-wrapper--error]="
+                  getSubtaskGroup(i).get('title')?.invalid &&
+                  getSubtaskGroup(i).get('title')?.touched
+                "
+              >
+                <input
+                  type="text"
+                  formControlName="title"
+                  class="form-input subtask-input text-body-l"
+                  placeholder="e.g. Make coffee"
+                />
+                @if (getSubtaskError(i)) {
+                  <span class="subtask-inline-error text-body-l">
+                    {{ getSubtaskError(i) }}
+                  </span>
+                }
+              </div>
+              <button
+                type="button"
+                class="subtask-remove-btn"
+                aria-label="Remove subtask"
+                (click)="removeSubtask(i)"
+              >
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path
+                    d="M12.728 2.272L2.272 12.728M2.272 2.272l10.456 10.456"
+                    stroke="#828FA3"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+
+        <button type="button" class="btn btn--secondary btn--full-width" (click)="addSubtask()">
+          + Add New Subtask
+        </button>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label text-body-m" for="status">Status</label>
+        <div
+          class="select-wrapper"
+          [class.select-wrapper--error]="statusCtrl.invalid && statusCtrl.touched"
+        >
+          <select id="status" formControlName="status" class="form-select text-body-l">
+            <option value="" disabled>Select a status</option>
+            @for (option of statusOptions(); track option) {
+              <option [value]="option">{{ option }}</option>
+            }
+          </select>
+          <svg class="select-arrow" width="10" height="7" viewBox="0 0 10 7" fill="none">
+            <path d="M1 1L5 5L9 1" stroke="#635FC7" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+        @if (statusCtrl.invalid && statusCtrl.touched) {
+          <span class="form-error text-body-l">Status is required.</span>
+        }
+      </div>
+
+      <!-- ── Actions ── -->
+      <div class="form-actions">
+        <!-- type="submit" triggers (ngSubmit) on the form -->
+        <button type="submit" class="btn btn--primary-lg btn--full-width">
+          {{ submitLabel() }}
+        </button>
+        <button type="button" class="btn btn--secondary btn--full-width" (click)="onCancel()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
