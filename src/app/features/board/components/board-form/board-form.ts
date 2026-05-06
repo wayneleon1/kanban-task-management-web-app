@@ -1,21 +1,20 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms'; // ← Template-Driven Forms
 import { Router } from '@angular/router';
 import { Modal } from '../../../../shared/components/modal/modal';
-import { Input } from '../../../../shared/components/input/input';
-import { Button } from '../../../../shared/components/button/button';
 import { ModalService } from '../../../../core/services/modal.service';
 import { BoardService } from '../../../../core/services/board.service';
 import { generateId } from '../../../../core/utils/id.utils';
 
-interface ColumnDraft {
+interface ColumnModel {
   id: string;
   name: string;
-  error: string;
 }
 
 @Component({
   selector: 'app-board-form',
-  imports: [Modal, Input, Button],
+  standalone: true,
+  imports: [FormsModule, Modal],
   templateUrl: './board-form.html',
   styleUrl: './board-form.css',
 })
@@ -24,76 +23,60 @@ export class BoardForm implements OnInit {
   private boardService = inject(BoardService);
   private router = inject(Router);
 
-  boardName = signal('');
-  boardNameError = signal('');
-  columns = signal<ColumnDraft[]>([]);
+  // NgModel binds directly to these via [(ngModel)]
+  boardNameModel = '';
 
-  isEditMode = computed(() => this.modalService.state().type === 'edit-board');
-  heading = computed(() => (this.isEditMode() ? 'Edit Board' : 'Add New Board'));
-  submitLabel = computed(() => (this.isEditMode() ? 'Save Changes' : 'Create New Board'));
-  nameLabel = computed(() => (this.isEditMode() ? 'Board Name' : 'Name'));
-  colLabel = computed(() => (this.isEditMode() ? 'Board Columns' : 'Columns'));
+  // Regular array — ngModel mutates elements directly via reference
+  columnsModel: ColumnModel[] = [];
+
+  isEditMode = false;
+  heading = '';
+  submitLabel = '';
+  nameLabel = '';
+  colLabel = '';
 
   ngOnInit(): void {
-    if (this.isEditMode()) {
+    this.isEditMode = this.modalService.state().type === 'edit-board';
+    this.heading = this.isEditMode ? 'Edit Board' : 'Add New Board';
+    this.submitLabel = this.isEditMode ? 'Save Changes' : 'Create New Board';
+    this.nameLabel = this.isEditMode ? 'Board Name' : 'Name';
+    this.colLabel = this.isEditMode ? 'Board Columns' : 'Columns';
+
+    if (this.isEditMode) {
       const board = this.boardService.activeBoard();
       if (board) {
-        this.boardName.set(board.name);
-        this.columns.set(board.columns.map((c) => ({ id: c.id, name: c.name, error: '' })));
+        this.boardNameModel = board.name;
+        // Map existing columns to the model array (ngModel will mutate these)
+        this.columnsModel = board.columns.map((c) => ({ id: c.id, name: c.name }));
       }
     } else {
-      this.columns.set([
-        { id: generateId(), name: 'Todo', error: '' },
-        { id: generateId(), name: 'Doing', error: '' },
-      ]);
+      this.columnsModel = [
+        { id: generateId(), name: 'Todo' },
+        { id: generateId(), name: 'Doing' },
+      ];
     }
   }
 
-  // ── Column Management ──
+  // ── Column management ──
   addColumn(): void {
-    this.columns.update((list) => [...list, { id: generateId(), name: '', error: '' }]);
+    this.columnsModel.push({ id: generateId(), name: '' });
   }
 
   removeColumn(id: string): void {
-    this.columns.update((list) => list.filter((c) => c.id !== id));
+    this.columnsModel = this.columnsModel.filter((c) => c.id !== id);
   }
 
-  updateColumn(id: string, value: string): void {
-    this.columns.update((list) =>
-      list.map((c) => (c.id === id ? { ...c, name: value, error: '' } : c)),
-    );
-  }
-
-  // ── Validation ──
-  private validate(): boolean {
-    let valid = true;
-
-    if (!this.boardName().trim()) {
-      this.boardNameError.set("Can't be empty");
-      valid = false;
-    } else {
-      this.boardNameError.set('');
+  // ── Template-Driven submit: NgForm ref carries validity + controls ──
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      form.control.markAllAsTouched();
+      return;
     }
 
-    this.columns.update((list) =>
-      list.map((c) => ({ ...c, error: !c.name.trim() ? "Can't be empty" : '' })),
-    );
+    const name = this.boardNameModel.trim();
+    const colNames = this.columnsModel.map((c) => c.name.trim()).filter(Boolean);
 
-    if (this.columns().some((c) => c.error)) valid = false;
-
-    return valid;
-  }
-
-  // ── Submit ──
-  onSubmit(): void {
-    if (!this.validate()) return;
-
-    const name = this.boardName().trim();
-    const colNames = this.columns()
-      .map((c) => c.name.trim())
-      .filter(Boolean);
-
-    if (this.isEditMode()) {
+    if (this.isEditMode) {
       this.boardService.updateBoard(this.boardService.activeBoardId(), name, colNames);
       this.modalService.close();
     } else {
@@ -101,5 +84,9 @@ export class BoardForm implements OnInit {
       this.modalService.close();
       this.router.navigate(['/boards', newBoard.id]);
     }
+  }
+
+  onCancel(): void {
+    this.modalService.close();
   }
 }
