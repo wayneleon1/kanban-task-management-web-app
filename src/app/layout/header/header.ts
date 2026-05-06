@@ -1,4 +1,5 @@
 import { Component, inject, signal, ElementRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { BoardService } from '../../core/services/board.service';
 import { LayoutService } from '../../core/services/layout.service';
 import { ModalService } from '../../core/services/modal.service';
@@ -16,6 +17,7 @@ export class Header {
   boardService = inject(BoardService);
   layoutService = inject(LayoutService);
   modalService = inject(ModalService);
+  private router = inject(Router);
   private el = inject(ElementRef);
 
   boardMenuOpen = signal(false);
@@ -24,8 +26,10 @@ export class Header {
     return (this.boardService.activeBoard()?.columns.length ?? 0) > 0;
   }
 
+  // ── Navigate to route-based task form ──
   openAddTask(): void {
-    this.modalService.open('add-task');
+    const boardId = this.boardService.activeBoardId();
+    this.router.navigate(['/boards', boardId, 'new-task']);
   }
 
   openEditBoard(): void {
