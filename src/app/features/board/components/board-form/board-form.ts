@@ -1,10 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms'; // ← Template-Driven Forms
-import { Router } from '@angular/router';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Store } from '@ngrx/store';
+
 import { Modal } from '../../../../shared/components/modal/modal';
 import { ModalService } from '../../../../core/services/modal.service';
-import { BoardService } from '../../../../core/services/board.service';
 import { generateId } from '../../../../core/utils/id.utils';
+import * as BoardActions from '../../store/board.actions';
+import { selectActiveBoard } from '../../store/board.selectors';
 
 interface ColumnModel {
   id: string;
@@ -19,14 +21,11 @@ interface ColumnModel {
   styleUrl: './board-form.css',
 })
 export class BoardForm implements OnInit {
+  private store = inject(Store);
   private modalService = inject(ModalService);
-  private boardService = inject(BoardService);
-  private router = inject(Router);
 
-  // NgModel binds directly to these via [(ngModel)]
+  // Local model properties — bound via [(ngModel)] in template
   boardNameModel = '';
-
-  // Regular array — ngModel mutates elements directly via reference
   columnsModel: ColumnModel[] = [];
 
   isEditMode = false;
@@ -34,6 +33,8 @@ export class BoardForm implements OnInit {
   submitLabel = '';
   nameLabel = '';
   colLabel = '';
+
+  private activeBoard = this.store.selectSignal(selectActiveBoard);
 
   ngOnInit(): void {
     this.isEditMode = this.modalService.state().type === 'edit-board';
@@ -43,10 +44,10 @@ export class BoardForm implements OnInit {
     this.colLabel = this.isEditMode ? 'Board Columns' : 'Columns';
 
     if (this.isEditMode) {
-      const board = this.boardService.activeBoard();
+      // Read signal value synchronously — no async required
+      const board = this.activeBoard();
       if (board) {
         this.boardNameModel = board.name;
-        // Map existing columns to the model array (ngModel will mutate these)
         this.columnsModel = board.columns.map((c) => ({ id: c.id, name: c.name }));
       }
     } else {
@@ -57,7 +58,6 @@ export class BoardForm implements OnInit {
     }
   }
 
-  // ── Column management ──
   addColumn(): void {
     this.columnsModel.push({ id: generateId(), name: '' });
   }
@@ -66,7 +66,6 @@ export class BoardForm implements OnInit {
     this.columnsModel = this.columnsModel.filter((c) => c.id !== id);
   }
 
-  // ── Template-Driven submit: NgForm ref carries validity + controls ──
   onSubmit(form: NgForm): void {
     if (form.invalid) {
       form.control.markAllAsTouched();
@@ -77,13 +76,13 @@ export class BoardForm implements OnInit {
     const colNames = this.columnsModel.map((c) => c.name.trim()).filter(Boolean);
 
     if (this.isEditMode) {
-      this.boardService.updateBoard(this.boardService.activeBoardId(), name, colNames);
-      this.modalService.close();
+      const boardId = this.modalService.state().boardId ?? '';
+      this.store.dispatch(BoardActions.updateBoard({ boardId, name, columnNames: colNames }));
     } else {
-      const newBoard = this.boardService.addBoard(name, colNames);
-      this.modalService.close();
-      this.router.navigate(['/boards', newBoard.id]);
+      // addBoard → Effect builds the entity → addBoardSuccess → navigates
+      this.store.dispatch(BoardActions.addBoard({ name, columnNames: colNames }));
     }
+    this.modalService.close();
   }
 
   onCancel(): void {
