@@ -8,8 +8,8 @@ import {
   AbstractControl,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 
-import { BoardService } from '../../../../core/services/board.service';
 import { generateId } from '../../../../core/utils/id.utils';
 import { Task } from '../../../../core/models/board.model';
 import {
@@ -17,6 +17,8 @@ import {
   futureDateValidator,
 } from '../../../../core/validators/task.validators';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
+import * as BoardActions from '../../store/board.actions';
+import { selectBoardEntities } from '../../store/board.selectors';
 
 @Component({
   selector: 'app-task-form-page',
@@ -27,33 +29,31 @@ import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.
 })
 export class TaskFormPage implements OnInit, CanComponentDeactivate {
   private fb = inject(FormBuilder);
-  private boardService = inject(BoardService);
+  private store = inject(Store);
   private router = inject(Router);
 
-  id = input<string>(''); // :id  (board id)
-  taskId = input<string>(''); // :taskId (empty on new-task route)
+  id = input<string>('');
+  taskId = input<string>('');
 
-  // ── Derived state ──
   isEditMode = computed(() => !!this.taskId());
   heading = computed(() => (this.isEditMode() ? 'Edit Task' : 'Add New Task'));
   submitLabel = computed(() => (this.isEditMode() ? 'Save Changes' : 'Create Task'));
 
-  statusOptions = computed(
-    () => this.boardService.getBoardById(this.id())?.columns.map((c) => c.name) ?? [],
-  );
+  private allEntities = this.store.selectSignal(selectBoardEntities);
 
-  // Prevent CanDeactivate from firing after successful submit
+  board = computed(() => this.allEntities()[this.id()] ?? null);
+  statusOptions = computed(() => this.board()?.columns.map((c) => c.name) ?? []);
+
   private submitted = false;
 
   form: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-    description: ['', [Validators.maxLength(500)]],
-    dueDate: ['', [futureDateValidator()]],
-    status: ['', [Validators.required]],
+    description: ['', Validators.maxLength(500)],
+    dueDate: ['', futureDateValidator()],
+    status: ['', Validators.required],
     subtasks: this.fb.array([]),
   });
 
-  // ── Typed control accessors (avoid repeated form.get() calls) ──
   get titleCtrl(): AbstractControl {
     return this.form.get('title')!;
   }
@@ -71,10 +71,10 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
   }
 
   ngOnInit(): void {
-    // Add unique title validator (needs runtime boardId + excludeTaskId)
+    // uniqueTitleValidator receives a BoardLookupFn — reads from store signal
     this.titleCtrl.addValidators(
       uniqueTitleValidator(
-        this.boardService,
+        (id: string) => this.allEntities()[id] ?? null,
         this.id(),
         this.isEditMode() ? this.taskId() : undefined,
       ),
@@ -84,25 +84,32 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
     if (this.isEditMode()) {
       this.loadExistingTask();
     } else {
-      // Pre-populate: 2 empty subtask fields + first column as default status
       this.addSubtask();
       this.addSubtask();
-      const defaultStatus = this.statusOptions()[0] ?? '';
-      this.statusCtrl.setValue(defaultStatus);
+      this.statusCtrl.setValue(this.statusOptions()[0] ?? '');
     }
   }
 
-  // ── Pre-populate form for edit mode using patchValue() ──
+  // Synchronous task lookup — reads directly from the store signal
+  private findTask(taskId: string) {
+    for (const board of Object.values(this.allEntities())) {
+      if (!board) continue;
+      for (const col of board.columns) {
+        const task = col.tasks.find((t) => t.id === taskId);
+        if (task) return { task, boardId: board.id };
+      }
+    }
+    return null;
+  }
+
   private loadExistingTask(): void {
-    const result = this.boardService.findTask(this.taskId());
+    const result = this.findTask(this.taskId());
     if (!result) {
       this.router.navigate(['/boards', this.id()]);
       return;
     }
 
     const { task } = result;
-
-    // patchValue() sets only the fields it knows about
     this.form.patchValue({
       title: task.title,
       description: task.description,
@@ -110,23 +117,13 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
       status: task.status,
     });
 
-    // Re-populate the FormArray with existing subtask titles
     this.subtasksArr.clear();
     task.subtasks.forEach((st) => this.addSubtask(st.title));
-
-    // Mark pristine so CanDeactivate doesn't warn on page load
     this.form.markAsPristine();
   }
 
-  /** Creates a single subtask FormGroup with its own validators */
-  private createSubtaskGroup(value = ''): FormGroup {
-    return this.fb.group({
-      title: [value, [Validators.required]],
-    });
-  }
-
   addSubtask(value = ''): void {
-    this.subtasksArr.push(this.createSubtaskGroup(value));
+    this.subtasksArr.push(this.fb.group({ title: [value, Validators.required] }));
   }
 
   removeSubtask(index: number): void {
@@ -134,60 +131,44 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
     this.form.markAsDirty();
   }
 
-  getSubtaskGroup(index: number): FormGroup {
-    return this.subtasksArr.at(index) as FormGroup;
+  getSubtaskGroup(i: number): FormGroup {
+    return this.subtasksArr.at(i) as FormGroup;
   }
-
-  //  ERROR MESSAGE HELPERS
 
   getTitleError(): string {
     const c = this.titleCtrl;
     if (c.hasError('required')) return 'Title is required.';
-    if (c.hasError('minlength')) return `Title must be at least 3 characters.`;
+    if (c.hasError('minlength')) return 'Title must be at least 3 characters.';
     if (c.hasError('maxlength')) return 'Title cannot exceed 100 characters.';
     if (c.hasError('duplicateTitle')) return 'A task with this title already exists on this board.';
     return '';
   }
 
-  getDescError(): string {
-    if (this.descCtrl.hasError('maxlength')) return 'Description cannot exceed 500 characters.';
-    return '';
-  }
-
   getDateError(): string {
-    if (this.dateCtrl.hasError('pastDate')) return 'Due date cannot be in the past.';
-    return '';
+    return this.dateCtrl.hasError('pastDate') ? 'Due date cannot be in the past.' : '';
   }
 
-  getSubtaskError(index: number): string {
-    const ctrl = this.getSubtaskGroup(index).get('title');
-    if (ctrl?.hasError('required') && ctrl.touched) return "Can't be empty.";
-    return '';
+  getSubtaskError(i: number): string {
+    const ctrl = this.getSubtaskGroup(i).get('title');
+    return ctrl?.hasError('required') && ctrl.touched ? "Can't be empty." : '';
   }
 
   canDeactivate(): boolean {
-    // Allow leaving if: already submitted OR form hasn't been touched
     return this.submitted || !this.form.dirty;
   }
 
-  // FORM SUBMISSION
   onSubmit(): void {
-    // Mark ALL controls as touched so every error becomes visible
     this.form.markAllAsTouched();
-
-    // Stop if any control is invalid
     if (this.form.invalid) return;
 
     const { title, description, dueDate, status, subtasks } = this.form.value;
     const boardId = this.id();
 
     if (this.isEditMode()) {
-      const result = this.boardService.findTask(this.taskId());
+      const result = this.findTask(this.taskId());
       if (!result) return;
 
-      // Preserve isCompleted state for subtasks that already existed
       const completedMap = new Map(result.task.subtasks.map((s) => [s.id, s.isCompleted]));
-
       const updatedSubtasks = (subtasks as { title: string }[]).map((s, i) => {
         const existingId = result.task.subtasks[i]?.id ?? generateId();
         return {
@@ -197,13 +178,19 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
         };
       });
 
-      this.boardService.updateTask(result.boardId, this.taskId(), {
-        title: title.trim(),
-        description: description.trim(),
-        dueDate: dueDate || undefined,
-        status,
-        subtasks: updatedSubtasks,
-      });
+      this.store.dispatch(
+        BoardActions.updateTask({
+          boardId: result.boardId,
+          taskId: this.taskId(),
+          updates: {
+            title: title.trim(),
+            description: description.trim(),
+            dueDate: dueDate || undefined,
+            status,
+            subtasks: updatedSubtasks,
+          },
+        }),
+      );
     } else {
       const newTask: Omit<Task, 'id'> = {
         title: title.trim(),
@@ -216,7 +203,7 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
           isCompleted: false,
         })),
       };
-      this.boardService.addTask(boardId, newTask);
+      this.store.dispatch(BoardActions.addTask({ boardId, task: newTask }));
     }
 
     this.submitted = true;

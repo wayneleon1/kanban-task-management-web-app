@@ -1,11 +1,10 @@
 <app-modal>
   @if (task(); as t) {
     <div class="view-task">
-      <!-- ── Header ── -->
+      <!-- ── Header: title + three-dot menu ── -->
       <div class="view-task__header">
         <h2 class="view-task__title text-heading-l">{{ t.title }}</h2>
 
-        <!-- Three-dot menu -->
         <div class="view-task__menu">
           <button
             class="view-task__menu-trigger"

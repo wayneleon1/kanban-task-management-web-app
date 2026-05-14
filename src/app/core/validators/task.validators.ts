@@ -1,19 +1,22 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { BoardService } from '../services/board.service';
+import { Board } from '../models/board.model';
 
-// Prevents two tasks on the same board from having identical titles.
+export type BoardLookupFn = (boardId: string) => Board | null | undefined;
+
+// Unique Task Title
 export function uniqueTitleValidator(
-  boardService: BoardService,
+  getBoardById: BoardLookupFn,
   boardId: string,
   excludeTaskId?: string,
 ): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = (control.value ?? '').trim().toLowerCase();
 
-    // Let required handle empty
+    // Let Validators.required handle empty — avoid double error
     if (!value) return null;
 
-    const board = boardService.getBoardById(boardId);
+    // Call the lookup function directly instead of boardService.getBoardById()
+    const board = getBoardById(boardId);
     if (!board) return null;
 
     const isDuplicate = board.columns.some((col) =>
@@ -24,20 +27,23 @@ export function uniqueTitleValidator(
   };
 }
 
-// Ensures the due date is not in the past
+/**
+ * CUSTOM VALIDATOR — Future Date
+ * Ensures the selected date is not in the past.
+ */
 export function futureDateValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
-    if (!control.value) return null; // Optional field — empty is fine
-
+    if (!control.value) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const selected = new Date(control.value);
-
     return selected < today ? { pastDate: true } : null;
   };
 }
 
-//  Useful for descriptions — ensures at minimum N words are provided.
+/**
+ * CUSTOM VALIDATOR — Minimum Word Count
+ */
 export function minWordCountValidator(minWords: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     if (!control.value?.trim()) return null;

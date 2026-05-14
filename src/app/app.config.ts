@@ -10,7 +10,6 @@ import { BoardEffects } from './features/board/store/board.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
 
     // ── NgRx Store ──────────────────────────────────────────────────────────
