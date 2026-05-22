@@ -1,6 +1,35 @@
-@if (board(); as currentBoard) {
+<!-- ── Loading State ── -->
+@if (loading()) {
+  <div class="board-loading" aria-live="polite" aria-busy="true">
+    <div class="board-loading__columns">
+      @for (col of [1, 2, 3]; track col) {
+        <div class="skeleton-column">
+          <div class="skeleton skeleton--label"></div>
+          @for (card of [1, 2, 3]; track card) {
+            <div class="skeleton skeleton--card"></div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ── Error State ── -->
+@else if (error()) {
+  <div class="board-error" role="alert">
+    <svg class="board-error__icon" width="40" height="40" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+      <path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+    <p class="board-error__title text-heading-l">Something went wrong</p>
+    <p class="board-error__message text-body-l">{{ error() }}</p>
+  </div>
+}
+
+<!-- ── Board Content ── -->
+@else if (board(); as currentBoard) {
   @if (currentBoard.columns.length === 0) {
-    <!-- ── Empty board state ── -->
+    <!-- Empty board state -->
     <div class="board-empty">
       <p class="board-empty__text text-heading-l">
         This board is empty. Create a new column to get started.
@@ -10,12 +39,11 @@
       </app-button>
     </div>
   } @else {
-    <!-- ── Board with columns ── -->
+    <!-- Board with columns -->
     <div class="board-columns">
       @for (column of currentBoard.columns; track column.id) {
         <app-board-column [column]="column" />
       }
-
       <!-- + New Column placeholder -->
       <div class="new-column-placeholder" (click)="modalService.open('edit-board')">
         <span class="new-column-placeholder__text text-heading-xl"> + New Column </span>
@@ -23,7 +51,7 @@
     </div>
   }
 } @else {
-  <!-- ── Board not found ── -->
+  <!-- Board not found -->
   <div class="board-empty">
     <p class="board-empty__text text-heading-l">Board not found.</p>
   </div>

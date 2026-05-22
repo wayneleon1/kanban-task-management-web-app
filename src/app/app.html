@@ -55,3 +55,14 @@
     <app-confirm-delete />
   }
 }
+
+<!-- ── Global Error Toast ── -->
+@if (error()) {
+  <div class="error-toast" role="alert">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+      <path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+    <span class="text-body-m">{{ error() }}</span>
+  </div>
+}

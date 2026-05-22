@@ -65,6 +65,85 @@
   transition: color var(--transition-fast);
 }
 
+/* ── Loading Skeleton ── */
+.board-loading {
+  height: 100%;
+  overflow: hidden;
+  padding: var(--space-6);
+}
+
+.board-loading__columns {
+  display: flex;
+  gap: var(--space-6);
+  height: 100%;
+}
+
+.skeleton-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 280px;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-alt) 25%,
+    var(--color-border) 50%,
+    var(--color-surface-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-md);
+}
+
+.skeleton--label {
+  height: 15px;
+  width: 120px;
+  border-radius: var(--radius-pill);
+}
+
+.skeleton--card {
+  height: 88px;
+  width: 100%;
+  border-radius: var(--radius-lg);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Error State ── */
+.board-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.board-error__icon {
+  color: var(--color-danger);
+  opacity: 0.8;
+}
+
+.board-error__title {
+  color: var(--color-text-primary);
+}
+
+.board-error__message {
+  color: var(--color-text-secondary);
+  max-width: 420px;
+}
+
 @media (max-width: 768px) {
   .board-columns {
     padding: var(--space-4);
