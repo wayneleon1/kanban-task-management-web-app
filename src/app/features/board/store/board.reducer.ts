@@ -1,15 +1,10 @@
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { createReducer, on } from '@ngrx/store';
 import { Board } from '../../../core/models/board.model';
-import { generateId } from '../../../core/utils/id.utils';
 import { BoardState } from './board.state';
 import * as BoardActions from './board.actions';
 
-const COLUMN_COLORS = ['#49C4E5', '#8471F2', '#67E2AE', '#E9A23B', '#F24E1E', '#935FC4', '#1ABCFE'];
-
-export const boardAdapter: EntityAdapter<Board> = createEntityAdapter<Board>({
-  // Default sort: preserve insertion order (no sortComparer needed)
-});
+export const boardAdapter: EntityAdapter<Board> = createEntityAdapter<Board>();
 
 export const initialBoardState: BoardState = boardAdapter.getInitialState({
   activeBoardId: null,
@@ -17,11 +12,11 @@ export const initialBoardState: BoardState = boardAdapter.getInitialState({
   error: null,
 });
 
-// Reducer function handles all state changes based on dispatched actions
 export const boardReducer = createReducer(
   initialBoardState,
 
-  //  Load Boards
+  // ── Load Boards ────────────────────────────────────────────────────────────
+  // Set loading = true while the GET /boards request is in-flight
   on(BoardActions.loadBoards, (state) => ({
     ...state,
     loading: true,
@@ -32,7 +27,8 @@ export const boardReducer = createReducer(
     boardAdapter.setAll(boards, {
       ...state,
       loading: false,
-      // Set first board as active if nothing is active yet
+      error: null,
+      // Activate the first board only if nothing is active yet
       activeBoardId: state.activeBoardId ?? boards[0]?.id ?? null,
     }),
   ),
@@ -43,129 +39,164 @@ export const boardReducer = createReducer(
     error,
   })),
 
-  // ── Active Board ──────────────────────────────────────────────────────────
+  // ── Active Board ───────────────────────────────────────────────────────────
   on(BoardActions.setActiveBoard, (state, { boardId }) => ({
     ...state,
     activeBoardId: boardId,
   })),
 
-  // ── Add Board Success (board entity already built by Effect) ──────────────
+  // ── Add Board ──────────────────────────────────────────────────────────────
+  // Mark loading while POST /boards is in-flight
+  on(BoardActions.addBoard, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+
+  // API confirmed creation — add the server-returned board to the store
   on(BoardActions.addBoardSuccess, (state, { board }) =>
     boardAdapter.addOne(board, {
       ...state,
-      activeBoardId: board.id, // Auto-activate the new board
+      loading: false,
+      error: null,
+      activeBoardId: board.id, // auto-activate the newly created board
     }),
   ),
 
-  // ── Update Board ──────────────────────────────────────────────────────────
-  on(BoardActions.updateBoard, (state, { boardId, name, columnNames }) => {
-    const board = state.entities[boardId];
-    if (!board) return state;
+  on(BoardActions.addBoardFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
 
-    // Preserve existing columns (with tasks) when name matches; create new ones
-    const updatedColumns = columnNames
-      .filter((n) => n.trim())
-      .map((colName, i) => {
-        const existing = board.columns.find((c) => c.name === colName.trim());
-        return (
-          existing ?? {
-            id: generateId(),
-            name: colName.trim(),
-            color: COLUMN_COLORS[i % COLUMN_COLORS.length],
-            tasks: [],
-          }
-        );
-      });
+  // ── Update Board ───────────────────────────────────────────────────────────
+  // Mark loading while PUT /boards/:id is in-flight
+  on(BoardActions.updateBoard, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
 
-    return boardAdapter.updateOne(
-      { id: boardId, changes: { name, columns: updatedColumns } },
-      state,
-    );
-  }),
+  // Replace the board entity with the server-confirmed version
+  on(BoardActions.updateBoardSuccess, (state, { board }) =>
+    boardAdapter.upsertOne(board, {
+      ...state,
+      loading: false,
+      error: null,
+    }),
+  ),
 
-  // ── Delete Board ──────────────────────────────────────────────────────────
-  on(BoardActions.deleteBoard, (state, { boardId }) => {
+  on(BoardActions.updateBoardFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
+  // ── Delete Board ───────────────────────────────────────────────────────────
+  // Mark loading while DELETE /boards/:id is in-flight
+  on(BoardActions.deleteBoard, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+
+  // Remove from store only after the API confirms deletion
+  on(BoardActions.deleteBoardSuccess, (state, { boardId }) => {
     const next = boardAdapter.removeOne(boardId, state);
     const remainingIds = next.ids as string[];
-    // If we deleted the active board, activate the first remaining one
     const activeBoardId =
       state.activeBoardId === boardId ? (remainingIds[0] ?? null) : state.activeBoardId;
-    return { ...next, activeBoardId };
+    return { ...next, loading: false, error: null, activeBoardId };
   }),
 
-  // ── Add Task ──────────────────────────────────────────────────────────────
-  on(BoardActions.addTask, (state, { boardId, task }) => {
-    const board = state.entities[boardId];
-    if (!board) return state;
+  on(BoardActions.deleteBoardFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
 
-    const newTask = { ...task, id: generateId() };
-    const updatedColumns = board.columns.map((col) =>
-      col.name === newTask.status ? { ...col, tasks: [...col.tasks, newTask] } : col,
-    );
+  // ── Add Task ───────────────────────────────────────────────────────────────
+  on(BoardActions.addTask, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
 
-    return boardAdapter.updateOne({ id: boardId, changes: { columns: updatedColumns } }, state);
-  }),
+  // Replace the whole board with the server response (tasks are nested)
+  on(BoardActions.addTaskSuccess, (state, { board }) =>
+    boardAdapter.upsertOne(board, {
+      ...state,
+      loading: false,
+      error: null,
+    }),
+  ),
 
-  // ── Update Task (handles status change → moves between columns) ───────────
-  on(BoardActions.updateTask, (state, { boardId, taskId, updates }) => {
-    const board = state.entities[boardId];
-    if (!board) return state;
+  on(BoardActions.addTaskFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
 
-    // Find the task in any column
-    let current = null;
-    for (const col of board.columns) {
-      const found = col.tasks.find((t) => t.id === taskId);
-      if (found) {
-        current = found;
-        break;
-      }
-    }
-    if (!current) return state;
+  // ── Update Task ────────────────────────────────────────────────────────────
+  on(BoardActions.updateTask, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
 
-    const updated = { ...current, ...updates };
+  on(BoardActions.updateTaskSuccess, (state, { board }) =>
+    boardAdapter.upsertOne(board, {
+      ...state,
+      loading: false,
+      error: null,
+    }),
+  ),
 
-    // Remove from old column, add to matching new column
-    const updatedColumns = board.columns.map((col) => {
-      const without = col.tasks.filter((t) => t.id !== taskId);
-      return col.name === updated.status
-        ? { ...col, tasks: [...without, updated] }
-        : { ...col, tasks: without };
-    });
+  on(BoardActions.updateTaskFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
 
-    return boardAdapter.updateOne({ id: boardId, changes: { columns: updatedColumns } }, state);
-  }),
+  // ── Delete Task ────────────────────────────────────────────────────────────
+  on(BoardActions.deleteTask, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
 
-  // ── Delete Task ───────────────────────────────────────────────────────────
-  on(BoardActions.deleteTask, (state, { boardId, taskId }) => {
-    const board = state.entities[boardId];
-    if (!board) return state;
+  on(BoardActions.deleteTaskSuccess, (state, { board }) =>
+    boardAdapter.upsertOne(board, {
+      ...state,
+      loading: false,
+      error: null,
+    }),
+  ),
 
-    const updatedColumns = board.columns.map((col) => ({
-      ...col,
-      tasks: col.tasks.filter((t) => t.id !== taskId),
-    }));
+  on(BoardActions.deleteTaskFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
 
-    return boardAdapter.updateOne({ id: boardId, changes: { columns: updatedColumns } }, state);
-  }),
+  // ── Toggle Subtask ─────────────────────────────────────────────────────────
+  on(BoardActions.toggleSubtask, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
 
-  // ── Toggle Subtask ────────────────────────────────────────────────────────
-  on(BoardActions.toggleSubtask, (state, { boardId, taskId, subtaskId }) => {
-    const board = state.entities[boardId];
-    if (!board) return state;
+  on(BoardActions.toggleSubtaskSuccess, (state, { board }) =>
+    boardAdapter.upsertOne(board, {
+      ...state,
+      loading: false,
+      error: null,
+    }),
+  ),
 
-    const updatedColumns = board.columns.map((col) => ({
-      ...col,
-      tasks: col.tasks.map((task) => {
-        if (task.id !== taskId) return task;
-        return {
-          ...task,
-          subtasks: task.subtasks.map((st) =>
-            st.id === subtaskId ? { ...st, isCompleted: !st.isCompleted } : st,
-          ),
-        };
-      }),
-    }));
-
-    return boardAdapter.updateOne({ id: boardId, changes: { columns: updatedColumns } }, state);
-  }),
+  on(BoardActions.toggleSubtaskFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
 );
