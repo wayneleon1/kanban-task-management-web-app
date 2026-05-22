@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, shareReplay } from 'rxjs/operators';
+import { Observable, throwError, Subject } from 'rxjs';
+import { catchError, shareReplay, takeUntil } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { Board } from '../models/board.model';
@@ -9,45 +9,45 @@ import { Board } from '../models/board.model';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
-
-  // Base URL pulled from the environment file.
   private base = environment.apiUrl;
 
-  // ── Boards ──────────────────────────────────────────────────────────────
+  // ── Cache control ────────────────────────────────────────────────────────
+  // bustCache$ emits whenever a mutation completes, invalidating the
+  // shareReplay cache so the next getBoards() call hits the network.
+  private bustCache$ = new Subject<void>();
+  private boards$: Observable<Board[]> | null = null;
+
+  // ── Boards ───────────────────────────────────────────────────────────────
 
   /**
    * GET /boards
-   * Fetches all boards. shareReplay(1) caches the last emission so multiple
-   * subscribers (e.g. sidebar + board-detail) don't trigger duplicate requests.
+   * Returns a cached observable. Multiple subscribers within the same
+   * load cycle share a single HTTP request (shareReplay).
+   * Cache is cleared automatically after any mutation via bustCache().
    */
   getBoards(): Observable<Board[]> {
-    return this.http
-      .get<Board[]>(`${this.base}/boards`)
-      .pipe(shareReplay(1), catchError(this.handleError));
+    if (!this.boards$) {
+      this.boards$ = this.http
+        .get<Board[]>(`${this.base}/boards`)
+        .pipe(shareReplay(1), takeUntil(this.bustCache$), catchError(this.handleError));
+    }
+    return this.boards$;
   }
 
-  /**
-   * GET /boards/:id
-   * Fetches a single board by ID.
-   */
+  /** GET /boards/:id */
   getBoardById(id: string): Observable<Board> {
     return this.http.get<Board>(`${this.base}/boards/${id}`).pipe(catchError(this.handleError));
   }
 
-  /**
-   * POST /boards
-   * Creates a new board. The full Board object (with generated IDs) is sent
-   * from the Effect before calling this method.
-   */
+  /** POST /boards */
   createBoard(board: Board): Observable<Board> {
     return this.http.post<Board>(`${this.base}/boards`, board).pipe(catchError(this.handleError));
   }
 
   /**
    * PUT /boards/:id
-   * Replaces the entire board document — used for updates (name, columns)
-   * and for any task mutation (add / edit / delete / toggle subtask) since
-   * json-server stores tasks nested inside the board.
+   * Used for all board edits AND nested task mutations (add/update/delete/toggle).
+   * Busts the getBoards() cache after success so the next load reflects changes.
    */
   updateBoard(board: Board): Observable<Board> {
     return this.http
@@ -55,29 +55,29 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * DELETE /boards/:id
-   * Removes the board document entirely.
-   */
+  /** DELETE /boards/:id */
   deleteBoard(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/boards/${id}`).pipe(catchError(this.handleError));
   }
 
+  /**
+   * Invalidates the getBoards() cache.
+   * Called by effects after any successful mutation so a fresh reload
+   * always fetches updated data from the server.
+   */
+  bustCache(): void {
+    this.boards$ = null;
+    this.bustCache$.next();
+  }
+
   // ── Error Handler ────────────────────────────────────────────────────────
 
-  /**
-   * Centralised error handler.
-   * Converts HttpErrorResponse into a plain string message that NgRx
-   * failure actions (e.g. loadBoardsFailure) can carry in their `error` prop.
-   */
   private handleError(err: HttpErrorResponse): Observable<never> {
     let message: string;
 
     if (err.status === 0) {
-      // Network error or server unreachable (e.g. json-server not running)
       message = 'Cannot reach the server. Is json-server running on port 3000?';
     } else {
-      // HTTP error returned by the server (4xx / 5xx)
       message = `Server error ${err.status}: ${err.message}`;
     }
 

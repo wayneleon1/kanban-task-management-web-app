@@ -12,7 +12,11 @@ import { BoardForm } from './features/board/components/board-form/board-form';
 import { ConfirmDelete } from './shared/components/confirm-delete/confirm-delete';
 import { MobileBoardMenu } from './layout/mobile-board-menu/mobile-board-menu';
 import { loadBoards } from './features/board/store/board.actions';
-import { selectBoardsError, selectBoardsLoading } from './features/board/store/board.selectors';
+import {
+  selectBoardsError,
+  selectBoardsLoading,
+  selectBoardsAreFresh,
+} from './features/board/store/board.selectors';
 
 @Component({
   selector: 'app-root',
@@ -35,12 +39,16 @@ export class App implements OnInit {
   layoutService = inject(LayoutService);
   modalService = inject(ModalService);
 
-  // Exposed to the template for the global error toast
   error = this.store.selectSignal(selectBoardsError);
   loading = this.store.selectSignal(selectBoardsLoading);
 
+  // Reads freshness once synchronously at init — avoids redundant HTTP call
+  // if the store is already populated (e.g. hot module reload, back navigation)
+  private isFresh = this.store.selectSignal(selectBoardsAreFresh);
+
   ngOnInit(): void {
-    // Kick off the data pipeline: loadBoards → Effect → GET /boards → loadBoardsSuccess
-    this.store.dispatch(loadBoards());
+    if (!this.isFresh()) {
+      this.store.dispatch(loadBoards());
+    }
   }
 }

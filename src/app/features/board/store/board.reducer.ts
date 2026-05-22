@@ -10,13 +10,13 @@ export const initialBoardState: BoardState = boardAdapter.getInitialState({
   activeBoardId: null,
   loading: false,
   error: null,
+  lastLoaded: null,
 });
 
 export const boardReducer = createReducer(
   initialBoardState,
 
   // ── Load Boards ────────────────────────────────────────────────────────────
-  // Set loading = true while the GET /boards request is in-flight
   on(BoardActions.loadBoards, (state) => ({
     ...state,
     loading: true,
@@ -28,7 +28,7 @@ export const boardReducer = createReducer(
       ...state,
       loading: false,
       error: null,
-      // Activate the first board only if nothing is active yet
+      lastLoaded: Date.now(), // stamp the successful load time
       activeBoardId: state.activeBoardId ?? boards[0]?.id ?? null,
     }),
   ),
@@ -46,20 +46,14 @@ export const boardReducer = createReducer(
   })),
 
   // ── Add Board ──────────────────────────────────────────────────────────────
-  // Mark loading while POST /boards is in-flight
-  on(BoardActions.addBoard, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(BoardActions.addBoard, (state) => ({ ...state, loading: true, error: null })),
 
-  // API confirmed creation — add the server-returned board to the store
   on(BoardActions.addBoardSuccess, (state, { board }) =>
     boardAdapter.addOne(board, {
       ...state,
       loading: false,
       error: null,
-      activeBoardId: board.id, // auto-activate the newly created board
+      activeBoardId: board.id,
     }),
   ),
 
@@ -70,20 +64,10 @@ export const boardReducer = createReducer(
   })),
 
   // ── Update Board ───────────────────────────────────────────────────────────
-  // Mark loading while PUT /boards/:id is in-flight
-  on(BoardActions.updateBoard, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(BoardActions.updateBoard, (state) => ({ ...state, loading: true, error: null })),
 
-  // Replace the board entity with the server-confirmed version
   on(BoardActions.updateBoardSuccess, (state, { board }) =>
-    boardAdapter.upsertOne(board, {
-      ...state,
-      loading: false,
-      error: null,
-    }),
+    boardAdapter.upsertOne(board, { ...state, loading: false, error: null }),
   ),
 
   on(BoardActions.updateBoardFailure, (state, { error }) => ({
@@ -93,14 +77,8 @@ export const boardReducer = createReducer(
   })),
 
   // ── Delete Board ───────────────────────────────────────────────────────────
-  // Mark loading while DELETE /boards/:id is in-flight
-  on(BoardActions.deleteBoard, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(BoardActions.deleteBoard, (state) => ({ ...state, loading: true, error: null })),
 
-  // Remove from store only after the API confirms deletion
   on(BoardActions.deleteBoardSuccess, (state, { boardId }) => {
     const next = boardAdapter.removeOne(boardId, state);
     const remainingIds = next.ids as string[];
@@ -116,19 +94,10 @@ export const boardReducer = createReducer(
   })),
 
   // ── Add Task ───────────────────────────────────────────────────────────────
-  on(BoardActions.addTask, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(BoardActions.addTask, (state) => ({ ...state, loading: true, error: null })),
 
-  // Replace the whole board with the server response (tasks are nested)
   on(BoardActions.addTaskSuccess, (state, { board }) =>
-    boardAdapter.upsertOne(board, {
-      ...state,
-      loading: false,
-      error: null,
-    }),
+    boardAdapter.upsertOne(board, { ...state, loading: false, error: null }),
   ),
 
   on(BoardActions.addTaskFailure, (state, { error }) => ({
@@ -138,18 +107,10 @@ export const boardReducer = createReducer(
   })),
 
   // ── Update Task ────────────────────────────────────────────────────────────
-  on(BoardActions.updateTask, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(BoardActions.updateTask, (state) => ({ ...state, loading: true, error: null })),
 
   on(BoardActions.updateTaskSuccess, (state, { board }) =>
-    boardAdapter.upsertOne(board, {
-      ...state,
-      loading: false,
-      error: null,
-    }),
+    boardAdapter.upsertOne(board, { ...state, loading: false, error: null }),
   ),
 
   on(BoardActions.updateTaskFailure, (state, { error }) => ({
@@ -159,18 +120,10 @@ export const boardReducer = createReducer(
   })),
 
   // ── Delete Task ────────────────────────────────────────────────────────────
-  on(BoardActions.deleteTask, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(BoardActions.deleteTask, (state) => ({ ...state, loading: true, error: null })),
 
   on(BoardActions.deleteTaskSuccess, (state, { board }) =>
-    boardAdapter.upsertOne(board, {
-      ...state,
-      loading: false,
-      error: null,
-    }),
+    boardAdapter.upsertOne(board, { ...state, loading: false, error: null }),
   ),
 
   on(BoardActions.deleteTaskFailure, (state, { error }) => ({
@@ -180,18 +133,10 @@ export const boardReducer = createReducer(
   })),
 
   // ── Toggle Subtask ─────────────────────────────────────────────────────────
-  on(BoardActions.toggleSubtask, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(BoardActions.toggleSubtask, (state) => ({ ...state, loading: true, error: null })),
 
   on(BoardActions.toggleSubtaskSuccess, (state, { board }) =>
-    boardAdapter.upsertOne(board, {
-      ...state,
-      loading: false,
-      error: null,
-    }),
+    boardAdapter.upsertOne(board, { ...state, loading: false, error: null }),
   ),
 
   on(BoardActions.toggleSubtaskFailure, (state, { error }) => ({

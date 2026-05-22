@@ -15,9 +15,21 @@
               "description": "",
               "status": "Todo",
               "subtasks": [
-                { "id": "st1-1", "title": "Sign up page", "isCompleted": false },
-                { "id": "st1-2", "title": "Sign in page", "isCompleted": false },
-                { "id": "st1-3", "title": "Welcome page", "isCompleted": false }
+                {
+                  "id": "st1-1",
+                  "title": "Sign up page",
+                  "isCompleted": false
+                },
+                {
+                  "id": "st1-2",
+                  "title": "Sign in page",
+                  "isCompleted": false
+                },
+                {
+                  "id": "st1-3",
+                  "title": "Welcome page",
+                  "isCompleted": false
+                }
               ]
             },
             {
@@ -25,7 +37,13 @@
               "title": "Build UI for search",
               "description": "",
               "status": "Todo",
-              "subtasks": [{ "id": "st2-1", "title": "Search page", "isCompleted": false }]
+              "subtasks": [
+                {
+                  "id": "st2-1",
+                  "title": "Search page",
+                  "isCompleted": false
+                }
+              ]
             },
             {
               "id": "t3",
@@ -33,8 +51,16 @@
               "description": "",
               "status": "Todo",
               "subtasks": [
-                { "id": "st3-1", "title": "Account page", "isCompleted": false },
-                { "id": "st3-2", "title": "Billing page", "isCompleted": false }
+                {
+                  "id": "st3-1",
+                  "title": "Account page",
+                  "isCompleted": false
+                },
+                {
+                  "id": "st3-2",
+                  "title": "Billing page",
+                  "isCompleted": false
+                }
               ]
             },
             {
@@ -43,9 +69,36 @@
               "description": "",
               "status": "Todo",
               "subtasks": [
-                { "id": "st4-1", "title": "Internal QA", "isCompleted": false },
-                { "id": "st4-2", "title": "External UAT", "isCompleted": false }
+                {
+                  "id": "st4-1",
+                  "title": "Internal QA",
+                  "isCompleted": false
+                },
+                {
+                  "id": "st4-2",
+                  "title": "External UAT",
+                  "isCompleted": false
+                }
               ]
+            },
+            {
+              "title": "New Task",
+              "description": "Here is the description",
+              "dueDate": "2026-05-23",
+              "status": "Todo",
+              "subtasks": [
+                {
+                  "id": "mpgknutc5nn47gs2d3t",
+                  "title": "Make coffee",
+                  "isCompleted": false
+                },
+                {
+                  "id": "mpgknutct8u5aii92dk",
+                  "title": "Drink Tea",
+                  "isCompleted": false
+                }
+              ],
+              "id": "mpgknutd5x3ezgj0b6i"
             }
           ]
         },
@@ -60,9 +113,21 @@
               "description": "",
               "status": "Doing",
               "subtasks": [
-                { "id": "st5-1", "title": "Settings - Account", "isCompleted": true },
-                { "id": "st5-2", "title": "Settings - Billing", "isCompleted": false },
-                { "id": "st5-3", "title": "Search page", "isCompleted": false }
+                {
+                  "id": "st5-1",
+                  "title": "Settings - Account",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st5-2",
+                  "title": "Settings - Billing",
+                  "isCompleted": false
+                },
+                {
+                  "id": "st5-3",
+                  "title": "Search page",
+                  "isCompleted": false
+                }
               ]
             },
             {
@@ -71,9 +136,21 @@
               "description": "",
               "status": "Doing",
               "subtasks": [
-                { "id": "st6-1", "title": "Upgrade plan", "isCompleted": true },
-                { "id": "st6-2", "title": "Cancel plan", "isCompleted": true },
-                { "id": "st6-3", "title": "Update payment method", "isCompleted": false }
+                {
+                  "id": "st6-1",
+                  "title": "Upgrade plan",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st6-2",
+                  "title": "Cancel plan",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st6-3",
+                  "title": "Update payment method",
+                  "isCompleted": false
+                }
               ]
             },
             {
@@ -82,9 +159,21 @@
               "description": "",
               "status": "Doing",
               "subtasks": [
-                { "id": "st7-1", "title": "Sign up page", "isCompleted": true },
-                { "id": "st7-2", "title": "Sign in page", "isCompleted": false },
-                { "id": "st7-3", "title": "Welcome page", "isCompleted": false }
+                {
+                  "id": "st7-1",
+                  "title": "Sign up page",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st7-2",
+                  "title": "Sign in page",
+                  "isCompleted": false
+                },
+                {
+                  "id": "st7-3",
+                  "title": "Welcome page",
+                  "isCompleted": false
+                }
               ]
             },
             {
@@ -93,8 +182,16 @@
               "description": "",
               "status": "Doing",
               "subtasks": [
-                { "id": "st8-1", "title": "Add search endpoint", "isCompleted": true },
-                { "id": "st8-2", "title": "Define search criteria", "isCompleted": false }
+                {
+                  "id": "st8-1",
+                  "title": "Add search endpoint",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st8-2",
+                  "title": "Define search criteria",
+                  "isCompleted": false
+                }
               ]
             },
             {
@@ -103,8 +200,16 @@
               "description": "",
               "status": "Doing",
               "subtasks": [
-                { "id": "st9-1", "title": "Define user model", "isCompleted": true },
-                { "id": "st9-2", "title": "Add auth endpoints", "isCompleted": false }
+                {
+                  "id": "st9-1",
+                  "title": "Define user model",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st9-2",
+                  "title": "Add auth endpoints",
+                  "isCompleted": false
+                }
               ]
             },
             {
@@ -143,7 +248,11 @@
               "description": "",
               "status": "Done",
               "subtasks": [
-                { "id": "st11-1", "title": "Complete 5 wireframe tests", "isCompleted": true }
+                {
+                  "id": "st11-1",
+                  "title": "Complete 5 wireframe tests",
+                  "isCompleted": true
+                }
               ]
             },
             {
@@ -152,7 +261,11 @@
               "description": "",
               "status": "Done",
               "subtasks": [
-                { "id": "st12-1", "title": "Create clickable wireframe", "isCompleted": true }
+                {
+                  "id": "st12-1",
+                  "title": "Create clickable wireframe",
+                  "isCompleted": true
+                }
               ]
             },
             {
@@ -161,9 +274,21 @@
               "description": "",
               "status": "Done",
               "subtasks": [
-                { "id": "st13-1", "title": "Meet to review results", "isCompleted": true },
-                { "id": "st13-2", "title": "Discuss feedback as a team", "isCompleted": true },
-                { "id": "st13-3", "title": "Iterate on designs", "isCompleted": true }
+                {
+                  "id": "st13-1",
+                  "title": "Meet to review results",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st13-2",
+                  "title": "Discuss feedback as a team",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st13-3",
+                  "title": "Iterate on designs",
+                  "isCompleted": true
+                }
               ]
             },
             {
@@ -177,7 +302,11 @@
                   "title": "Create paper prototypes for version one",
                   "isCompleted": true
                 },
-                { "id": "st14-2", "title": "Complete 10 usability tests", "isCompleted": true }
+                {
+                  "id": "st14-2",
+                  "title": "Complete 10 usability tests",
+                  "isCompleted": true
+                }
               ]
             },
             {
@@ -186,7 +315,11 @@
               "description": "",
               "status": "Done",
               "subtasks": [
-                { "id": "st15-1", "title": "Interview 10 customers", "isCompleted": true }
+                {
+                  "id": "st15-1",
+                  "title": "Interview 10 customers",
+                  "isCompleted": true
+                }
               ]
             },
             {
@@ -195,7 +328,11 @@
               "description": "",
               "status": "Done",
               "subtasks": [
-                { "id": "st16-1", "title": "Find direct competitors", "isCompleted": true },
+                {
+                  "id": "st16-1",
+                  "title": "Find direct competitors",
+                  "isCompleted": true
+                },
                 {
                   "id": "st16-2",
                   "title": "SWOT analysis for each competitor",
@@ -209,8 +346,16 @@
               "description": "",
               "status": "Done",
               "subtasks": [
-                { "id": "st17-1", "title": "Google specific market", "isCompleted": true },
-                { "id": "st17-2", "title": "Write up research", "isCompleted": true }
+                {
+                  "id": "st17-1",
+                  "title": "Google specific market",
+                  "isCompleted": true
+                },
+                {
+                  "id": "st17-2",
+                  "title": "Write up research",
+                  "isCompleted": true
+                }
               ]
             }
           ]
@@ -226,6 +371,31 @@
       "id": "roadmap",
       "name": "Roadmap",
       "columns": []
+    },
+    {
+      "id": "R4XwvWpOGfs",
+      "name": "Web design",
+      "columns": [
+        {
+          "id": "mpgkpw0ymibm4ptw08",
+          "name": "Todo",
+          "color": "#49C4E5",
+          "tasks": []
+        },
+        {
+          "id": "mpgkpw0ys0t2fvh1k",
+          "name": "Doing",
+          "color": "#8471F2",
+          "tasks": []
+        },
+        {
+          "id": "mpgkpw0yufuje692ose",
+          "name": "Done",
+          "color": "#67E2AE",
+          "tasks": []
+        }
+      ]
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
