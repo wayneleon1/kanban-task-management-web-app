@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, ElementRef } from '@angular/core';
+import { Router } from '@angular/router'; // ← NEW
 import { Modal } from '../../../../shared/components/modal/modal';
 import { Checkbox } from '../../../../shared/components/checkbox/checkbox';
 import { Dropdown } from '../../../../shared/components/dropdown/dropdown';
@@ -16,6 +17,7 @@ import { BoardService } from '../../../../core/services/board.service';
 export class ViewTask {
   private modalService = inject(ModalService);
   private boardService = inject(BoardService);
+  private router = inject(Router); // ← NEW
   private el = inject(ElementRef);
 
   menuOpen = signal(false);
@@ -46,9 +48,15 @@ export class ViewTask {
     this.boardService.updateTask(data.boardId, data.task.id, { status: newStatus });
   }
 
+  // ── Navigate to route-based edit form (closes modal first) ──
   openEditTask(): void {
     this.menuOpen.set(false);
-    this.modalService.open('edit-task', { taskId: this.modalService.state().taskId });
+    const taskId = this.modalService.state().taskId;
+    const data = this.taskData();
+    this.modalService.close();
+    if (data && taskId) {
+      this.router.navigate(['/boards', data.boardId, 'edit', taskId]);
+    }
   }
 
   openDeleteTask(): void {
