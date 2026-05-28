@@ -5,7 +5,9 @@
       <p class="board-empty__text text-heading-l">
         This board is empty. Create a new column to get started.
       </p>
-      <app-button variant="primary-lg"> + Add New Column </app-button>
+      <app-button variant="primary-lg" (btnClick)="modalService.open('edit-board')">
+        + Add New Column
+      </app-button>
     </div>
   } @else {
     <!-- ── Board with columns ── -->
@@ -15,7 +17,7 @@
       }
 
       <!-- + New Column placeholder -->
-      <div class="new-column-placeholder">
+      <div class="new-column-placeholder" (click)="modalService.open('edit-board')">
         <span class="new-column-placeholder__text text-heading-xl"> + New Column </span>
       </div>
     </div>

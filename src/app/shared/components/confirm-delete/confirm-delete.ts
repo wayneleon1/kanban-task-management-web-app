@@ -1,9 +1,14 @@
 import { Component, inject, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+
+import { Modal } from '../modal/modal';
 import { Button } from '../button/button';
 import { ModalService } from '../../../core/services/modal.service';
-import { BoardService } from '../../../core/services/board.service';
-import { Modal } from '../modal/modal';
+import * as BoardActions from '../../../features/board/store/board.actions';
+import {
+  selectAllBoards,
+  selectBoardEntities,
+} from '../../../features/board/store/board.selectors';
 
 @Component({
   selector: 'app-confirm-delete',
@@ -13,36 +18,63 @@ import { Modal } from '../modal/modal';
   styleUrl: './confirm-delete.css',
 })
 export class ConfirmDelete {
+  private store = inject(Store);
   private modalService = inject(ModalService);
-  private boardService = inject(BoardService);
-  private router = inject(Router);
+
+  // ✅ Two selectSignal() calls — both update synchronously with store changes
+  private allBoards = this.store.selectSignal(selectAllBoards);
+  private allEntities = this.store.selectSignal(selectBoardEntities);
 
   isTask = computed(() => this.modalService.state().type === 'delete-task');
 
   title = computed(() => (this.isTask() ? 'Delete this task?' : 'Delete this board?'));
 
+  /*
+   * message() reads from both store signals AND modal state signal.
+   * It recomputes whenever any of them change — fully reactive.
+   */
   message = computed(() => {
     if (this.isTask()) {
-      const result = this.boardService.findTask(this.modalService.state().taskId ?? '');
-      return `Are you sure you want to delete the '${result?.task.title ?? ''}' task and its subtasks? This action cannot be reversed.`;
+      const taskId = this.modalService.state().taskId ?? '';
+      let taskName = '';
+      outer: for (const board of this.allBoards()) {
+        for (const col of board.columns) {
+          const task = col.tasks.find((t) => t.id === taskId);
+          if (task) {
+            taskName = task.title;
+            break outer;
+          }
+        }
+      }
+      return `Are you sure you want to delete the '${taskName}' task and its subtasks? This action cannot be reversed.`;
     }
-    const board = this.boardService.getBoardById(this.modalService.state().boardId ?? '');
+
+    const boardId = this.modalService.state().boardId ?? '';
+    const board = this.allEntities()[boardId];
     return `Are you sure you want to delete the '${board?.name ?? ''}' board? This action will remove all columns and tasks and cannot be reversed.`;
   });
 
   onDelete(): void {
     if (this.isTask()) {
       const taskId = this.modalService.state().taskId ?? '';
-      const result = this.boardService.findTask(taskId);
-      if (result) this.boardService.deleteTask(result.boardId, taskId);
-      this.modalService.close();
+      let boardId = '';
+      outer: for (const board of this.allBoards()) {
+        for (const col of board.columns) {
+          if (col.tasks.some((t) => t.id === taskId)) {
+            boardId = board.id;
+            break outer;
+          }
+        }
+      }
+      if (boardId) {
+        this.store.dispatch(BoardActions.deleteTask({ boardId, taskId }));
+      }
     } else {
       const boardId = this.modalService.state().boardId ?? '';
-      this.boardService.deleteBoard(boardId);
-      this.modalService.close();
-      const first = this.boardService.boards()[0];
-      this.router.navigate(first ? ['/boards', first.id] : ['/']);
+      // deleteBoard → Effect handles navigation to the next board
+      this.store.dispatch(BoardActions.deleteBoard({ boardId }));
     }
+    this.modalService.close();
   }
 
   onCancel(): void {

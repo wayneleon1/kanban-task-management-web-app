@@ -3,6 +3,7 @@
     <h2 class="form-heading text-heading-l">{{ heading() }}</h2>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form">
+      <!-- ── Title ── -->
       <div class="form-field">
         <div class="form-field__label-row">
           <label class="form-label text-body-m" for="title">Title</label>
@@ -33,7 +34,7 @@
           rows="4"
         ></textarea>
         @if (descCtrl.invalid && descCtrl.touched) {
-          <span class="form-error text-body-l">{{ getDescError() }}</span>
+          <span class="form-error text-body-l">Description cannot exceed 500 characters.</span>
         }
       </div>
 
@@ -54,7 +55,7 @@
         }
       </div>
 
-      <!-- ── Subtasks — FormArray ── -->
+      <!-- ── Subtasks (FormArray) ── -->
       <div class="form-field">
         <label class="form-label text-body-m">Subtasks</label>
 
@@ -104,6 +105,7 @@
         </button>
       </div>
 
+      <!-- ── Status ── -->
       <div class="form-field">
         <label class="form-label text-body-m" for="status">Status</label>
         <div
@@ -116,7 +118,6 @@
               <option [value]="option">{{ option }}</option>
             }
           </select>
-          <!-- Custom arrow -->
           <svg class="select-arrow" width="10" height="7" viewBox="0 0 10 7" fill="none">
             <path d="M1 1L5 5L9 1" stroke="#635FC7" stroke-width="2" stroke-linecap="round" />
           </svg>
@@ -128,7 +129,6 @@
 
       <!-- ── Actions ── -->
       <div class="form-actions">
-        <!-- type="submit" triggers (ngSubmit) on the form -->
         <button type="submit" class="btn btn--primary-lg btn--full-width">
           {{ submitLabel() }}
         </button>

@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { BoardService } from '../../core/services/board.service';
+import { Store } from '@ngrx/store';
+
 import { LayoutService } from '../../core/services/layout.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ModalService } from '../../core/services/modal.service';
+import { selectAllBoards } from '../../features/board/store/board.selectors';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,8 +15,10 @@ import { ModalService } from '../../core/services/modal.service';
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
-  boardService = inject(BoardService);
+  private store = inject(Store);
   layoutService = inject(LayoutService);
   themeService = inject(ThemeService);
   modalService = inject(ModalService);
+
+  boards = this.store.selectSignal(selectAllBoards);
 }

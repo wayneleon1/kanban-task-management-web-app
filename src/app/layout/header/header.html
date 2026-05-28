@@ -35,7 +35,7 @@
         aria-label="Select board"
       >
         <h1 class="header__board-name text-heading-l">
-          {{ boardService.activeBoard()?.name ?? '' }}
+          {{ activeBoard()?.name ?? '' }}
         </h1>
         <!-- Caret -->
         <svg
@@ -52,7 +52,7 @@
     } @else {
       <!-- Desktop board name (static) -->
       <h1 class="header__board-name text-heading-xl">
-        {{ boardService.activeBoard()?.name ?? '' }}
+        {{ activeBoard()?.name ?? '' }}
       </h1>
     }
   </div>

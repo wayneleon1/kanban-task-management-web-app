@@ -1,9 +1,11 @@
 import { Component, inject, signal, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { BoardService } from '../../core/services/board.service';
+import { Store } from '@ngrx/store';
+
+import { Button } from '../../shared/components/button/button';
 import { LayoutService } from '../../core/services/layout.service';
 import { ModalService } from '../../core/services/modal.service';
-import { Button } from '../../shared/components/button/button';
+import { selectActiveBoard, selectActiveBoardId } from '../../features/board/store/board.selectors';
 
 @Component({
   selector: 'app-header',
@@ -14,32 +16,36 @@ import { Button } from '../../shared/components/button/button';
   host: { '(document:click)': 'onDocumentClick($event)' },
 })
 export class Header {
-  boardService = inject(BoardService);
-  layoutService = inject(LayoutService);
-  modalService = inject(ModalService);
+  private store = inject(Store);
   private router = inject(Router);
   private el = inject(ElementRef);
+  layoutService = inject(LayoutService);
+  modalService = inject(ModalService);
 
   boardMenuOpen = signal(false);
 
+  activeBoard = this.store.selectSignal(selectActiveBoard);
+  activeBoardId = this.store.selectSignal(selectActiveBoardId);
+
   get hasColumns(): boolean {
-    return (this.boardService.activeBoard()?.columns.length ?? 0) > 0;
+    return (this.activeBoard()?.columns.length ?? 0) > 0;
   }
 
-  // ── Navigate to route-based task form ──
   openAddTask(): void {
-    const boardId = this.boardService.activeBoardId();
-    this.router.navigate(['/boards', boardId, 'new-task']);
+    const boardId = this.activeBoardId();
+    if (boardId) this.router.navigate(['/boards', boardId, 'new-task']);
   }
 
   openEditBoard(): void {
     this.boardMenuOpen.set(false);
-    this.modalService.open('edit-board', { boardId: this.boardService.activeBoardId() });
+    const boardId = this.activeBoardId();
+    if (boardId) this.modalService.open('edit-board', { boardId });
   }
 
   openDeleteBoard(): void {
     this.boardMenuOpen.set(false);
-    this.modalService.open('delete-board', { boardId: this.boardService.activeBoardId() });
+    const boardId = this.activeBoardId();
+    if (boardId) this.modalService.open('delete-board', { boardId });
   }
 
   onDocumentClick(event: Event): void {

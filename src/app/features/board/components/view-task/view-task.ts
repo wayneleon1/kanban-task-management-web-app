@@ -1,10 +1,13 @@
 import { Component, inject, signal, computed, ElementRef } from '@angular/core';
-import { Router } from '@angular/router'; // ← NEW
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+
 import { Modal } from '../../../../shared/components/modal/modal';
 import { Checkbox } from '../../../../shared/components/checkbox/checkbox';
 import { Dropdown } from '../../../../shared/components/dropdown/dropdown';
 import { ModalService } from '../../../../core/services/modal.service';
-import { BoardService } from '../../../../core/services/board.service';
+import * as BoardActions from '../../store/board.actions';
+import { selectAllBoards } from '../../store/board.selectors';
 
 @Component({
   selector: 'app-view-task',
@@ -15,47 +18,68 @@ import { BoardService } from '../../../../core/services/board.service';
   host: { '(document:click)': 'onDocumentClick($event)' },
 })
 export class ViewTask {
+  private store = inject(Store);
   private modalService = inject(ModalService);
-  private boardService = inject(BoardService);
-  private router = inject(Router); // ← NEW
+  private router = inject(Router);
   private el = inject(ElementRef);
 
   menuOpen = signal(false);
 
-  taskData = computed(() => {
+  private allBoards = this.store.selectSignal(selectAllBoards);
+
+  taskResult = computed(() => {
     const taskId = this.modalService.state().taskId;
-    return taskId ? (this.boardService.findTask(taskId) ?? null) : null;
+    if (!taskId) return null;
+    for (const board of this.allBoards()) {
+      for (const col of board.columns) {
+        const task = col.tasks.find((t) => t.id === taskId);
+        if (task) return { task, boardId: board.id };
+      }
+    }
+    return null;
   });
 
-  task = computed(() => this.taskData()?.task ?? null);
-
+  task = computed(() => this.taskResult()?.task ?? null);
   completedCount = computed(() => this.task()?.subtasks.filter((s) => s.isCompleted).length ?? 0);
 
-  statusOptions = computed(
-    () =>
-      this.boardService.activeBoard()?.columns.map((c) => ({ label: c.name, value: c.name })) ?? [],
-  );
+  // Status options come from the task's own board (not just the active board)
+  statusOptions = computed(() => {
+    const boardId = this.taskResult()?.boardId;
+    if (!boardId) return [];
+    const board = this.allBoards().find((b) => b.id === boardId);
+    return board?.columns.map((c) => ({ label: c.name, value: c.name })) ?? [];
+  });
 
   toggleSubtask(subtaskId: string): void {
-    const data = this.taskData();
-    if (!data) return;
-    this.boardService.toggleSubtask(data.boardId, data.task.id, subtaskId);
+    const result = this.taskResult();
+    if (!result) return;
+    this.store.dispatch(
+      BoardActions.toggleSubtask({
+        boardId: result.boardId,
+        taskId: result.task.id,
+        subtaskId,
+      }),
+    );
   }
 
   onStatusChange(newStatus: string): void {
-    const data = this.taskData();
-    if (!data) return;
-    this.boardService.updateTask(data.boardId, data.task.id, { status: newStatus });
+    const result = this.taskResult();
+    if (!result) return;
+    this.store.dispatch(
+      BoardActions.updateTask({
+        boardId: result.boardId,
+        taskId: result.task.id,
+        updates: { status: newStatus },
+      }),
+    );
   }
 
-  // ── Navigate to route-based edit form (closes modal first) ──
   openEditTask(): void {
     this.menuOpen.set(false);
-    const taskId = this.modalService.state().taskId;
-    const data = this.taskData();
+    const result = this.taskResult();
     this.modalService.close();
-    if (data && taskId) {
-      this.router.navigate(['/boards', data.boardId, 'edit', taskId]);
+    if (result) {
+      this.router.navigate(['/boards', result.boardId, 'edit', result.task.id]);
     }
   }
 

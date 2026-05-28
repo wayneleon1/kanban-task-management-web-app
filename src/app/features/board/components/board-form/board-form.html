@@ -6,12 +6,14 @@
       <!-- ── Board Name ── -->
       <div class="form-field">
         <div class="form-field__label-row">
-          <label class="form-label text-body-m" for="boardName">{{ nameLabel }}</label>
-
+          <label class="form-label text-body-m" for="boardName">
+            {{ nameLabel }}
+          </label>
           @if (nameCtrl.invalid && nameCtrl.touched) {
             <span class="form-error-inline text-body-l">Can't be empty.</span>
           }
         </div>
+
         <input
           id="boardName"
           type="text"
@@ -28,7 +30,7 @@
         />
       </div>
 
-      <!-- ── Columns (dynamic list with ngModel per column) ── -->
+      <!-- ── Columns ── -->
       <div class="form-field">
         <label class="form-label text-body-m">{{ colLabel }}</label>
 
@@ -79,6 +81,7 @@
         </button>
       </div>
 
+      <!-- ── Submit ── -->
       <button type="submit" class="btn btn--primary-lg btn--full-width">
         {{ submitLabel }}
       </button>

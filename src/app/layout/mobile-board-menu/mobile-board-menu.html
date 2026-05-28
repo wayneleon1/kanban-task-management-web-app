@@ -3,13 +3,11 @@
   <!-- Card — stop propagation so clicking inside doesn't close -->
   <div class="mobile-menu-card" (click)="$event.stopPropagation()">
     <!-- ── Board List ── -->
-    <p class="mobile-menu__heading text-heading-s">
-      All Boards ({{ boardService.boards().length }})
-    </p>
+    <p class="mobile-menu__heading text-heading-s">All Boards ({{ boards().length }})</p>
 
     <nav class="mobile-menu__nav">
       <ul class="mobile-menu__board-list">
-        @for (board of boardService.boards(); track board.id) {
+        @for (board of boards(); track board.id) {
           <li>
             <a
               class="mobile-menu__board-item text-heading-m"

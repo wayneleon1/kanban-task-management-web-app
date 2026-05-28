@@ -1,30 +1,34 @@
-import { Component, computed, effect, inject, input } from '@angular/core';
-import { BoardService } from '../../../../core/services/board.service';
+import { Component, inject, input, computed, effect } from '@angular/core';
+import { Store } from '@ngrx/store';
+
 import { BoardColumn } from '../../components/board-column/board-column';
-import { Button } from "../../../../shared";
+import { Button } from '../../../../shared/components/button/button';
+import { ModalService } from '../../../../core/services/modal.service';
+import { setActiveBoard } from '../../store/board.actions';
+import { selectBoardEntities } from '../../store/board.selectors';
 
 @Component({
   selector: 'app-board-detail',
+  standalone: true,
   imports: [BoardColumn, Button],
   templateUrl: './board-detail.html',
   styleUrl: './board-detail.css',
 })
 export class BoardDetail {
-  // ── Route param :id is auto-bound via withComponentInputBinding() ──
+  private store = inject(Store);
+  modalService = inject(ModalService);
+
   id = input<string>('');
 
-  boardService = inject(BoardService);
+  private allEntities = this.store.selectSignal(selectBoardEntities);
 
-  // Derive the board reactively from the signal input
-  board = computed(() => this.boardService.getBoardById(this.id()) ?? null);
+  board = computed(() => this.allEntities()[this.id()] ?? null);
 
   constructor() {
-    // Keep BoardService in sync when the route param changes
+    // Keep the store's activeBoardId in sync with the current route param
     effect(() => {
-      const currentId = this.id();
-      if (currentId) {
-        this.boardService.setActiveBoardId(currentId);
-      }
+      const id = this.id();
+      if (id) this.store.dispatch(setActiveBoard({ boardId: id }));
     });
   }
 }

@@ -9,6 +9,8 @@ import { TaskForm } from './features/board/components/task-form/task-form';
 import { BoardForm } from './features/board/components/board-form/board-form';
 import { ConfirmDelete } from './shared/components/confirm-delete/confirm-delete';
 import { MobileBoardMenu } from './layout/mobile-board-menu/mobile-board-menu';
+import { Store } from '@ngrx/store';
+import { loadBoards } from './features/board/store/board.actions';
 
 @Component({
   selector: 'app-root',
@@ -26,6 +28,13 @@ import { MobileBoardMenu } from './layout/mobile-board-menu/mobile-board-menu';
   styleUrl: './app.css',
 })
 export class App {
+  private store = inject(Store);
+
   layoutService = inject(LayoutService);
   modalService = inject(ModalService);
+
+  ngOnInit(): void {
+    // Kick off the data pipeline: loadBoards → Effect → localStorage → loadBoardsSuccess → Reducer
+    this.store.dispatch(loadBoards());
+  }
 }
