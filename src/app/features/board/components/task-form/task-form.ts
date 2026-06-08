@@ -1,12 +1,15 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+
 import { Modal } from '../../../../shared/components/modal/modal';
 import { Input } from '../../../../shared/components/input/input';
 import { Button } from '../../../../shared/components/button/button';
 import { Dropdown } from '../../../../shared/components/dropdown/dropdown';
 import { ModalService } from '../../../../core/services/modal.service';
-import { BoardService } from '../../../../core/services/board.service';
 import { Task } from '../../../../core/models/board.model';
 import { generateId } from '../../../../core/utils/id.utils';
+import * as BoardActions from '../../store/board.actions';
+import { selectActiveBoard, selectTaskResult } from '../../store/board.selectors';
 
 interface SubtaskDraft {
   id: string;
@@ -22,25 +25,30 @@ interface SubtaskDraft {
   styleUrl: './task-form.css',
 })
 export class TaskForm implements OnInit {
+  private store = inject(Store);
   private modalService = inject(ModalService);
-  private boardService = inject(BoardService);
 
-  // ── Form State ──
+  // ── Selectors ──────────────────────────────────────────────────────────────
+  private activeBoard = this.store.selectSignal(selectActiveBoard);
+
+  // ── Form State ─────────────────────────────────────────────────────────────
   title = signal('');
   titleError = signal('');
   description = signal('');
   subtasks = signal<SubtaskDraft[]>([]);
   status = signal('');
 
+  // ── Derived UI ─────────────────────────────────────────────────────────────
   isEditMode = computed(() => this.modalService.state().type === 'edit-task');
   heading = computed(() => (this.isEditMode() ? 'Edit Task' : 'Add New Task'));
   submitLabel = computed(() => (this.isEditMode() ? 'Save Changes' : 'Create Task'));
 
+  // Status dropdown options come from the active board's columns in the store
   statusOptions = computed(
-    () =>
-      this.boardService.activeBoard()?.columns.map((c) => ({ label: c.name, value: c.name })) ?? [],
+    () => this.activeBoard()?.columns.map((c) => ({ label: c.name, value: c.name })) ?? [],
   );
 
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
   ngOnInit(): void {
     if (this.isEditMode()) {
       this.loadExistingTask();
@@ -49,22 +57,31 @@ export class TaskForm implements OnInit {
         { id: generateId(), title: '', error: '' },
         { id: generateId(), title: '', error: '' },
       ]);
-      this.status.set(this.boardService.activeBoard()?.columns[0]?.name ?? '');
+      // Default status to the first column of the active board
+      this.status.set(this.activeBoard()?.columns[0]?.name ?? '');
     }
   }
 
   private loadExistingTask(): void {
     const taskId = this.modalService.state().taskId ?? '';
-    const result = this.boardService.findTask(taskId);
-    if (!result) return;
-    const { task } = result;
+
+    // Read the task directly from the store using the memoized selector
+    let taskResult: { task: Task; boardId: string } | null = null;
+    this.store
+      .select(selectTaskResult(taskId))
+      .subscribe((result) => (taskResult = result))
+      .unsubscribe();
+
+    if (!taskResult) return;
+    const { task } = taskResult as { task: Task; boardId: string };
+
     this.title.set(task.title);
     this.description.set(task.description);
     this.status.set(task.status);
     this.subtasks.set(task.subtasks.map((s) => ({ id: s.id, title: s.title, error: '' })));
   }
 
-  // ── Subtask Management ──
+  // ── Subtask Management ─────────────────────────────────────────────────────
   addSubtask(): void {
     this.subtasks.update((list) => [...list, { id: generateId(), title: '', error: '' }]);
   }
@@ -79,7 +96,7 @@ export class TaskForm implements OnInit {
     );
   }
 
-  // ── Validation ──
+  // ── Validation ─────────────────────────────────────────────────────────────
   private validate(): boolean {
     let valid = true;
 
@@ -99,17 +116,25 @@ export class TaskForm implements OnInit {
     return valid;
   }
 
-  // ── Submit ──
+  // ── Submit ─────────────────────────────────────────────────────────────────
   onSubmit(): void {
     if (!this.validate()) return;
 
+    const boardId = this.activeBoard()?.id ?? '';
+
     if (this.isEditMode()) {
       const taskId = this.modalService.state().taskId ?? '';
-      const result = this.boardService.findTask(taskId);
-      if (!result) return;
 
-      // Preserve isCompleted for existing subtasks
-      const completedMap = new Map(result.task.subtasks.map((s) => [s.id, s.isCompleted]));
+      // Read current task from store to preserve isCompleted on subtasks
+      let taskResult: { task: Task; boardId: string } | null = null;
+      this.store
+        .select(selectTaskResult(taskId))
+        .subscribe((result) => (taskResult = result))
+        .unsubscribe();
+
+      if (!taskResult) return;
+      const { task, boardId: taskBoardId } = taskResult as { task: Task; boardId: string };
+      const completedMap = new Map(task.subtasks.map((s) => [s.id, s.isCompleted]));
 
       const updates: Partial<Omit<Task, 'id'>> = {
         title: this.title().trim(),
@@ -124,7 +149,8 @@ export class TaskForm implements OnInit {
           })),
       };
 
-      this.boardService.updateTask(result.boardId, taskId, updates);
+      // Dispatch to NgRx — Effect will PUT to the API
+      this.store.dispatch(BoardActions.updateTask({ boardId: taskBoardId, taskId, updates }));
     } else {
       const taskData: Omit<Task, 'id'> = {
         title: this.title().trim(),
@@ -134,7 +160,9 @@ export class TaskForm implements OnInit {
           .filter((s) => s.title.trim())
           .map((s) => ({ id: s.id, title: s.title.trim(), isCompleted: false })),
       };
-      this.boardService.addTask(this.boardService.activeBoardId(), taskData);
+
+      // Dispatch to NgRx — Effect will PUT to the API
+      this.store.dispatch(BoardActions.addTask({ boardId, task: taskData }));
     }
 
     this.modalService.close();
