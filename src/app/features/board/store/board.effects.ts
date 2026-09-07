@@ -110,6 +110,7 @@ export class BoardEffects {
             title: task.title,
             description: task.description,
             dueDate: task.dueDate || undefined,
+            assignedTo: task.assignedToId ?? undefined,
             subtasks: task.subtasks.map((s) => ({ title: s.title })),
           })
           .pipe(
@@ -152,10 +153,15 @@ export class BoardEffects {
           return of(BoardActions.updateTaskFailure({ error: 'Target column not found' }));
         }
 
+        // 'in' (not `!== undefined`) so an explicit clear — the form always
+        // includes the key, with `dueDate || undefined` normalizing "" to
+        // undefined — is distinguished from the key being absent entirely
+        // (e.g. view-task's status-only update, which never touches these).
         const fields: Record<string, unknown> = {};
         if (updates.title !== undefined) fields['title'] = updates.title;
         if (updates.description !== undefined) fields['description'] = updates.description;
-        if (updates.dueDate !== undefined) fields['dueDate'] = updates.dueDate || null;
+        if ('dueDate' in updates) fields['dueDate'] = updates.dueDate || null;
+        if ('assignedToId' in updates) fields['assignedTo'] = updates.assignedToId || null;
         if (targetColumn.id !== currentColumn.id) fields['columnId'] = targetColumn.id;
 
         const fieldUpdate$ = Object.keys(fields).length

@@ -11,4 +11,14 @@
       {{ completedSubtasks() }} of {{ totalSubtasks() }} subtasks
     </p>
   }
+  @if (formattedDueDate() || task().assignedTo) {
+    <div class="task-card__meta">
+      @if (formattedDueDate()) {
+        <span class="task-card__due-date text-body-m">{{ formattedDueDate() }}</span>
+      }
+      @if (task().assignedTo; as assignee) {
+        <span class="task-card__assignee text-body-m">{{ assignee.name }}</span>
+      }
+    </div>
+  }
 </article>

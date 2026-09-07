@@ -6,6 +6,7 @@ import { Modal } from '../../../../shared/components/modal/modal';
 import { Checkbox } from '../../../../shared/components/checkbox/checkbox';
 import { Dropdown } from '../../../../shared/components/dropdown/dropdown';
 import { ModalService } from '../../../../core/services/modal.service';
+import { formatDueDate } from '../../../../core/utils/date.util';
 import * as BoardActions from '../../store/board.actions';
 import { selectAllBoards } from '../../store/board.selectors';
 
@@ -41,6 +42,10 @@ export class ViewTask {
 
   task = computed(() => this.taskResult()?.task ?? null);
   completedCount = computed(() => this.task()?.subtasks.filter((s) => s.isCompleted).length ?? 0);
+  formattedDueDate = computed(() => {
+    const dueDate = this.task()?.dueDate;
+    return dueDate ? formatDueDate(dueDate) : '';
+  });
 
   // Status options come from the task's own board (not just the active board)
   statusOptions = computed(() => {

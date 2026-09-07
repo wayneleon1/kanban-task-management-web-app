@@ -56,6 +56,24 @@
         </div>
       }
 
+      <!-- ── Due Date / Assignee ── -->
+      @if (formattedDueDate() || t.assignedTo) {
+        <div class="view-task__details">
+          @if (formattedDueDate()) {
+            <p class="view-task__detail text-body-l">
+              <span class="view-task__detail-label text-heading-s">Due Date</span>
+              {{ formattedDueDate() }}
+            </p>
+          }
+          @if (t.assignedTo; as assignee) {
+            <p class="view-task__detail text-body-l">
+              <span class="view-task__detail-label text-heading-s">Assignee</span>
+              {{ assignee.name }}
+            </p>
+          }
+        </div>
+      }
+
       <!-- ── Current Status ── -->
       <div class="view-task__status">
         <app-dropdown

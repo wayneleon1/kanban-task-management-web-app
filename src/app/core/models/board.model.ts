@@ -4,6 +4,12 @@ export interface Subtask {
   isCompleted: boolean;
 }
 
+export interface BoardMember {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -11,6 +17,7 @@ export interface Task {
   status: string;
   dueDate?: string;
   subtasks: Subtask[];
+  assignedTo?: BoardMember;
 }
 
 export interface Column {
@@ -20,8 +27,15 @@ export interface Column {
   tasks: Task[];
 }
 
+export interface Collaborator {
+  user: BoardMember;
+  role: 'viewer' | 'editor';
+}
+
 export interface Board {
   id: string;
   name: string;
   columns: Column[];
+  owner?: BoardMember;
+  collaborators?: Collaborator[];
 }

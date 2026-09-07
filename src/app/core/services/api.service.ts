@@ -112,7 +112,13 @@ export class ApiService {
 
   createTask(
     columnId: string,
-    input: { title: string; description?: string; dueDate?: string; subtasks?: { title: string }[] },
+    input: {
+      title: string;
+      description?: string;
+      dueDate?: string;
+      assignedTo?: string;
+      subtasks?: { title: string }[];
+    },
   ): Observable<Task> {
     return this.http
       .post<ApiEnvelope<{ task: TaskDto }>>(`${this.base}/tasks`, { columnId, ...input })

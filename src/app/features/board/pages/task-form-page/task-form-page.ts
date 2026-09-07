@@ -11,13 +11,14 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 
 import { generateId } from '../../../../core/utils/id.utils';
-import { Task } from '../../../../core/models/board.model';
+import { BoardMember } from '../../../../core/models/board.model';
 import {
   uniqueTitleValidator,
   futureDateValidator,
 } from '../../../../core/validators/task.validators';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import * as BoardActions from '../../store/board.actions';
+import { TaskDraft } from '../../store/board.actions';
 import { selectBoardEntities } from '../../store/board.selectors';
 
 @Component({
@@ -44,6 +45,15 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
   board = computed(() => this.allEntities()[this.id()] ?? null);
   statusOptions = computed(() => this.board()?.columns.map((c) => c.name) ?? []);
 
+  // Assignee choices: the board's owner plus any collaborators
+  boardMembers = computed<BoardMember[]>(() => {
+    const board = this.board();
+    if (!board) return [];
+    const owner = board.owner ? [board.owner] : [];
+    const collaborators = (board.collaborators ?? []).map((c) => c.user);
+    return [...owner, ...collaborators];
+  });
+
   private submitted = false;
 
   form: FormGroup = this.fb.group({
@@ -51,6 +61,7 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
     description: ['', Validators.maxLength(500)],
     dueDate: ['', futureDateValidator()],
     status: ['', Validators.required],
+    assignee: [''],
     subtasks: this.fb.array([]),
   });
 
@@ -65,6 +76,9 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
   }
   get statusCtrl(): AbstractControl {
     return this.form.get('status')!;
+  }
+  get assigneeCtrl(): AbstractControl {
+    return this.form.get('assignee')!;
   }
   get subtasksArr(): FormArray {
     return this.form.get('subtasks') as FormArray;
@@ -115,6 +129,7 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
       description: task.description,
       dueDate: task.dueDate ?? '',
       status: task.status,
+      assignee: task.assignedTo?.id ?? '',
     });
 
     this.subtasksArr.clear();
@@ -161,8 +176,9 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
-    const { title, description, dueDate, status, subtasks } = this.form.value;
+    const { title, description, dueDate, status, assignee, subtasks } = this.form.value;
     const boardId = this.id();
+    const assignedToId: string | null = assignee || null;
 
     if (this.isEditMode()) {
       const result = this.findTask(this.taskId());
@@ -187,16 +203,18 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
             description: description.trim(),
             dueDate: dueDate || undefined,
             status,
+            assignedToId,
             subtasks: updatedSubtasks,
           },
         }),
       );
     } else {
-      const newTask: Omit<Task, 'id'> = {
+      const newTask: TaskDraft = {
         title: title.trim(),
         description: description.trim(),
         dueDate: dueDate || undefined,
         status,
+        assignedToId,
         subtasks: (subtasks as { title: string }[]).map((s) => ({
           id: generateId(),
           title: s.title.trim(),

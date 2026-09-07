@@ -29,3 +29,26 @@
 .task-card__subtasks {
   color: var(--color-text-secondary);
 }
+
+.task-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.task-card__due-date,
+.task-card__assignee {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+/* Bullet separator, shown only when the due date precedes the assignee */
+.task-card__assignee::before {
+  content: '•';
+  margin-right: var(--space-3);
+}
+.task-card__assignee:first-child::before {
+  content: none;
+  margin-right: 0;
+}

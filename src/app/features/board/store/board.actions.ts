@@ -1,6 +1,13 @@
 import { createAction, props } from '@ngrx/store';
 import { Board, Column, Task } from '../../../core/models/board.model';
 
+/**
+ * What a form submits for a task, as opposed to `Task` (what's displayed).
+ * `assignedTo` on `Task` is a populated `BoardMember` object; forms only
+ * have the selected member's id, with `null` meaning "unassigned".
+ */
+export type TaskDraft = Omit<Task, 'id' | 'assignedTo'> & { assignedToId?: string | null };
+
 // ── Load Boards ───────────────────────────────────────────────────────────────
 export const loadBoards = createAction('[Board] Load Boards');
 export const loadBoardsSuccess = createAction(
@@ -52,17 +59,14 @@ export const deleteBoardFailure = createAction(
 );
 
 // ── Add Task ──────────────────────────────────────────────────────────────────
-export const addTask = createAction(
-  '[Task] Add Task',
-  props<{ boardId: string; task: Omit<Task, 'id'> }>(),
-);
+export const addTask = createAction('[Task] Add Task', props<{ boardId: string; task: TaskDraft }>());
 export const addTaskSuccess = createAction('[Task] Add Task Success', props<{ board: Board }>());
 export const addTaskFailure = createAction('[Task] Add Task Failure', props<{ error: string }>());
 
 // ── Update Task ───────────────────────────────────────────────────────────────
 export const updateTask = createAction(
   '[Task] Update Task',
-  props<{ boardId: string; taskId: string; updates: Partial<Omit<Task, 'id'>> }>(),
+  props<{ boardId: string; taskId: string; updates: Partial<TaskDraft> }>(),
 );
 export const updateTaskSuccess = createAction(
   '[Task] Update Task Success',

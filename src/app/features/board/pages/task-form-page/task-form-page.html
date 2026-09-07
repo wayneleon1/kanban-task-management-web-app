@@ -127,6 +127,24 @@
         }
       </div>
 
+      <!-- ── Assignee ── -->
+      <div class="form-field">
+        <label class="form-label text-body-m" for="assignee">
+          Assignee <span class="form-label--optional">(optional)</span>
+        </label>
+        <div class="select-wrapper">
+          <select id="assignee" formControlName="assignee" class="form-select text-body-l">
+            <option value="">Unassigned</option>
+            @for (member of boardMembers(); track member.id) {
+              <option [value]="member.id">{{ member.name }}</option>
+            }
+          </select>
+          <svg class="select-arrow" width="10" height="7" viewBox="0 0 10 7" fill="none">
+            <path d="M1 1L5 5L9 1" stroke="#635FC7" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
+
       <!-- ── Actions ── -->
       <div class="form-actions">
         <button type="submit" class="btn btn--primary-lg btn--full-width">
