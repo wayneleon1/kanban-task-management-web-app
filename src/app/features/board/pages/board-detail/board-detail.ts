@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import { BoardColumn } from '../../components/board-column/board-column';
 import { Button } from '../../../../shared/components/button/button';
 import { ModalService } from '../../../../core/services/modal.service';
-import { setActiveBoard } from '../../store/board.actions';
+import { reorderColumns, setActiveBoard } from '../../store/board.actions';
 import {
   selectBoardEntities,
   selectBoardsLoading,
@@ -35,5 +35,18 @@ export class BoardDetail {
       const id = this.id();
       if (id) this.store.dispatch(setActiveBoard({ boardId: id }));
     });
+  }
+
+  moveColumn(columnId: string, direction: 'left' | 'right'): void {
+    const board = this.board();
+    if (!board) return;
+
+    const ids = board.columns.map((c) => c.id);
+    const index = ids.indexOf(columnId);
+    const swapWith = direction === 'left' ? index - 1 : index + 1;
+    if (swapWith < 0 || swapWith >= ids.length) return;
+
+    [ids[index], ids[swapWith]] = [ids[swapWith], ids[index]];
+    this.store.dispatch(reorderColumns({ boardId: board.id, columnIds: ids }));
   }
 }

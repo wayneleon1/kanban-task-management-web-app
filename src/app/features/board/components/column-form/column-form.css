@@ -1,10 +1,10 @@
-.board-form {
+.column-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
 }
 
-.board-form__heading {
+.column-form__heading {
   color: var(--color-text-primary);
 }
 

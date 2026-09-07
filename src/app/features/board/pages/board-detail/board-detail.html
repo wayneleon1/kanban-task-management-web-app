@@ -34,18 +34,31 @@
       <p class="board-empty__text text-heading-l">
         This board is empty. Create a new column to get started.
       </p>
-      <app-button variant="primary-lg" (btnClick)="modalService.open('edit-board')">
+      <app-button
+        variant="primary-lg"
+        (btnClick)="modalService.open('add-column', { boardId: currentBoard.id })"
+      >
         + Add New Column
       </app-button>
     </div>
   } @else {
     <!-- Board with columns -->
     <div class="board-columns">
-      @for (column of currentBoard.columns; track column.id) {
-        <app-board-column [column]="column" />
+      @for (column of currentBoard.columns; track column.id; let first = $first; let last = $last) {
+        <app-board-column
+          [column]="column"
+          [boardId]="currentBoard.id"
+          [isFirst]="first"
+          [isLast]="last"
+          (moveLeft)="moveColumn(column.id, 'left')"
+          (moveRight)="moveColumn(column.id, 'right')"
+        />
       }
       <!-- + New Column placeholder -->
-      <div class="new-column-placeholder" (click)="modalService.open('edit-board')">
+      <div
+        class="new-column-placeholder"
+        (click)="modalService.open('add-column', { boardId: currentBoard.id })"
+      >
         <span class="new-column-placeholder__text text-heading-xl"> + New Column </span>
       </div>
     </div>

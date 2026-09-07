@@ -6,7 +6,7 @@ import { Store } from '@ngrx/store';
 import { Observable, forkJoin, from, of } from 'rxjs';
 import { catchError, concatMap, map, switchMap, tap, toArray } from 'rxjs/operators';
 
-import { Board, Column, Subtask, Task } from '../../../core/models/board.model';
+import { Board, Subtask, Task } from '../../../core/models/board.model';
 import { ApiService } from '../../../core/services/api.service';
 import * as BoardActions from './board.actions';
 import { selectAllBoards, selectBoardEntities } from './board.selectors';
@@ -34,20 +34,13 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  ADD BOARD — POST /boards, then POST each column sequentially
-  //  (sequential, not parallel, so the backend's position-by-count logic
-  //  can't race between concurrent column creates)
+  //  ADD BOARD — POST /boards (starts with zero columns; add via addColumn$)
   // ─────────────────────────────────────────────────────────────────────────
   addBoard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(BoardActions.addBoard),
-      switchMap(({ name, columnNames }) =>
+      switchMap(({ name }) =>
         this.api.createBoard(name).pipe(
-          switchMap((board) =>
-            this.createColumnsSequentially(board.id, columnNames).pipe(
-              map((columns) => ({ ...board, columns })),
-            ),
-          ),
           tap(() => this.api.bustCache()),
           map((board) => BoardActions.addBoardSuccess({ board })),
           catchError((err: Error) => of(BoardActions.addBoardFailure({ error: err.message }))),
@@ -57,25 +50,23 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  UPDATE BOARD — PUT /boards/:id, then diff columnNames against the
-  //  board's existing columns (by name) to add/remove as needed.
+  //  UPDATE BOARD — PUT /boards/:id (name only; columns managed separately).
+  //  The response has no nested columns, so the existing ones are preserved
+  //  client-side rather than trusting the response's (empty) columns array.
   // ─────────────────────────────────────────────────────────────────────────
   updateBoard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(BoardActions.updateBoard),
       concatLatestFrom(() => this.store.select(selectBoardEntities)),
-      switchMap(([{ boardId, name, columnNames }, entities]) => {
+      switchMap(([{ boardId, name }, entities]) => {
         const existing = entities[boardId];
         if (!existing) {
           return of(BoardActions.updateBoardFailure({ error: 'Board not found' }));
         }
 
-        const desiredNames = columnNames.map((n) => n.trim()).filter(Boolean);
-
         return this.api.updateBoardName(boardId, name).pipe(
-          switchMap(() => this.syncColumns(boardId, existing.columns, desiredNames)),
           tap(() => this.api.bustCache()),
-          map((columns) => BoardActions.updateBoardSuccess({ board: { ...existing, name, columns } })),
+          map(() => BoardActions.updateBoardSuccess({ board: { ...existing, name } })),
           catchError((err: Error) => of(BoardActions.updateBoardFailure({ error: err.message }))),
         );
       }),
@@ -290,43 +281,75 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
+  //  ADD COLUMN — POST /boards/:id/columns
+  // ─────────────────────────────────────────────────────────────────────────
+  addColumn$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(BoardActions.addColumn),
+      switchMap(({ boardId, name }) =>
+        this.api.createColumn(boardId, name).pipe(
+          tap(() => this.api.bustCache()),
+          map((column) => BoardActions.addColumnSuccess({ boardId, column })),
+          catchError((err: Error) => of(BoardActions.addColumnFailure({ error: err.message }))),
+        ),
+      ),
+    ),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  //  RENAME COLUMN — PUT /columns/:id
+  // ─────────────────────────────────────────────────────────────────────────
+  renameColumn$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(BoardActions.renameColumn),
+      switchMap(({ boardId, columnId, name }) =>
+        this.api.updateColumn(columnId, { name }).pipe(
+          tap(() => this.api.bustCache()),
+          map((column) => BoardActions.renameColumnSuccess({ boardId, column })),
+          catchError((err: Error) => of(BoardActions.renameColumnFailure({ error: err.message }))),
+        ),
+      ),
+    ),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  //  DELETE COLUMN — DELETE /columns/:id
+  // ─────────────────────────────────────────────────────────────────────────
+  deleteColumn$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(BoardActions.deleteColumn),
+      switchMap(({ boardId, columnId }) =>
+        this.api.deleteColumn(columnId).pipe(
+          tap(() => this.api.bustCache()),
+          map(() => BoardActions.deleteColumnSuccess({ boardId, columnId })),
+          catchError((err: Error) => of(BoardActions.deleteColumnFailure({ error: err.message }))),
+        ),
+      ),
+    ),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  //  REORDER COLUMNS — PUT /boards/:id/columns/reorder
+  //  Only the id order from the response is trusted; existing local column
+  //  objects (with their tasks) are reordered rather than the response body,
+  //  since that endpoint doesn't return nested tasks.
+  // ─────────────────────────────────────────────────────────────────────────
+  reorderColumns$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(BoardActions.reorderColumns),
+      switchMap(({ boardId, columnIds }) =>
+        this.api.reorderColumns(boardId, columnIds).pipe(
+          tap(() => this.api.bustCache()),
+          map(() => BoardActions.reorderColumnsSuccess({ boardId, columnIds })),
+          catchError((err: Error) => of(BoardActions.reorderColumnsFailure({ error: err.message }))),
+        ),
+      ),
+    ),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
   //  Helpers
   // ─────────────────────────────────────────────────────────────────────────
-
-  private createColumnsSequentially(boardId: string, columnNames: string[]): Observable<Column[]> {
-    const names = columnNames.map((n) => n.trim()).filter(Boolean);
-    if (!names.length) {
-      return of([]);
-    }
-    return from(names).pipe(
-      concatMap((name) => this.api.createColumn(boardId, name)),
-      toArray(),
-    );
-  }
-
-  private syncColumns(
-    boardId: string,
-    existing: Column[],
-    desiredNames: string[],
-  ): Observable<Column[]> {
-    const toKeep = existing.filter((c) => desiredNames.includes(c.name));
-    const toRemove = existing.filter((c) => !desiredNames.includes(c.name));
-    const toAdd = desiredNames.filter((n) => !existing.some((c) => c.name === n));
-
-    const removals$ = from(toRemove).pipe(
-      concatMap((c) => this.api.deleteColumn(c.id)),
-      toArray(),
-    );
-    const additions$ = from(toAdd).pipe(
-      concatMap((name) => this.api.createColumn(boardId, name)),
-      toArray(),
-    );
-
-    return removals$.pipe(
-      switchMap(() => additions$),
-      map((created) => [...toKeep, ...created]),
-    );
-  }
 
   private syncSubtasks(
     taskId: string,

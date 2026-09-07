@@ -77,8 +77,28 @@ export class ApiService {
       );
   }
 
+  updateColumn(columnId: string, updates: { name?: string; color?: string }): Observable<Column> {
+    return this.http
+      .put<ApiEnvelope<{ column: ColumnDto }>>(`${this.base}/columns/${columnId}`, updates)
+      .pipe(
+        map((res) => mapColumn(res.data.column)),
+        catchError(this.handleError),
+      );
+  }
+
   deleteColumn(columnId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/columns/${columnId}`).pipe(catchError(this.handleError));
+  }
+
+  reorderColumns(boardId: string, columnIds: string[]): Observable<Column[]> {
+    return this.http
+      .put<ApiEnvelope<{ columns: ColumnDto[] }>>(`${this.base}/boards/${boardId}/columns/reorder`, {
+        columnIds,
+      })
+      .pipe(
+        map((res) => res.data.columns.map(mapColumn)),
+        catchError(this.handleError),
+      );
   }
 
   // ── Tasks ────────────────────────────────────────────────────────────────

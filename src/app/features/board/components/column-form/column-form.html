@@ -1,36 +1,32 @@
 <app-modal>
-  <div class="board-form">
-    <h2 class="board-form__heading text-heading-l">{{ heading }}</h2>
+  <div class="column-form">
+    <h2 class="column-form__heading text-heading-l">{{ heading }}</h2>
 
-    <form #boardForm="ngForm" (ngSubmit)="onSubmit(boardForm)" novalidate>
-      <!-- ── Board Name ── -->
+    <form #columnForm="ngForm" (ngSubmit)="onSubmit(columnForm)" novalidate>
       <div class="form-field">
         <div class="form-field__label-row">
-          <label class="form-label text-body-m" for="boardName">
-            {{ nameLabel }}
-          </label>
+          <label class="form-label text-body-m" for="columnName">Column Name</label>
           @if (nameCtrl.invalid && nameCtrl.touched) {
             <span class="form-error-inline text-body-l">Can't be empty.</span>
           }
         </div>
 
         <input
-          id="boardName"
+          id="columnName"
           type="text"
           class="form-input text-body-l"
           [class.form-input--error]="nameCtrl.invalid && nameCtrl.touched"
-          name="boardName"
-          [(ngModel)]="boardNameModel"
+          name="columnName"
+          [(ngModel)]="nameModel"
           required
-          minlength="2"
+          minlength="1"
           maxlength="50"
-          placeholder="e.g. Web Design"
+          placeholder="e.g. Todo"
           #nameCtrl="ngModel"
           autocomplete="off"
         />
       </div>
 
-      <!-- ── Submit ── -->
       <button type="submit" class="btn btn--primary-lg btn--full-width">
         {{ submitLabel }}
       </button>

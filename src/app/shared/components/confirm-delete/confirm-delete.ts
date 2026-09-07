@@ -26,8 +26,13 @@ export class ConfirmDelete {
   private allEntities = this.store.selectSignal(selectBoardEntities);
 
   isTask = computed(() => this.modalService.state().type === 'delete-task');
+  isColumn = computed(() => this.modalService.state().type === 'delete-column');
 
-  title = computed(() => (this.isTask() ? 'Delete this task?' : 'Delete this board?'));
+  title = computed(() => {
+    if (this.isTask()) return 'Delete this task?';
+    if (this.isColumn()) return 'Delete this column?';
+    return 'Delete this board?';
+  });
 
   /*
    * message() reads from both store signals AND modal state signal.
@@ -47,6 +52,12 @@ export class ConfirmDelete {
         }
       }
       return `Are you sure you want to delete the '${taskName}' task and its subtasks? This action cannot be reversed.`;
+    }
+
+    if (this.isColumn()) {
+      const { boardId, columnId } = this.modalService.state();
+      const column = this.allEntities()[boardId ?? '']?.columns.find((c) => c.id === columnId);
+      return `Are you sure you want to delete the '${column?.name ?? ''}' column and its tasks? This action cannot be reversed.`;
     }
 
     const boardId = this.modalService.state().boardId ?? '';
@@ -69,6 +80,10 @@ export class ConfirmDelete {
       if (boardId) {
         this.store.dispatch(BoardActions.deleteTask({ boardId, taskId }));
       }
+    } else if (this.isColumn()) {
+      const boardId = this.modalService.state().boardId ?? '';
+      const columnId = this.modalService.state().columnId ?? '';
+      this.store.dispatch(BoardActions.deleteColumn({ boardId, columnId }));
     } else {
       const boardId = this.modalService.state().boardId ?? '';
       // deleteBoard → Effect handles navigation to the next board

@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Board, Task } from '../../../core/models/board.model';
+import { Board, Column, Task } from '../../../core/models/board.model';
 
 // ── Load Boards ───────────────────────────────────────────────────────────────
 export const loadBoards = createAction('[Board] Load Boards');
@@ -19,10 +19,7 @@ export const setActiveBoard = createAction(
 );
 
 // ── Add Board ─────────────────────────────────────────────────────────────────
-export const addBoard = createAction(
-  '[Board] Add Board',
-  props<{ name: string; columnNames: string[] }>(),
-);
+export const addBoard = createAction('[Board] Add Board', props<{ name: string }>());
 export const addBoardSuccess = createAction('[Board] Add Board Success', props<{ board: Board }>());
 export const addBoardFailure = createAction(
   '[Board] Add Board Failure',
@@ -32,7 +29,7 @@ export const addBoardFailure = createAction(
 // ── Update Board ──────────────────────────────────────────────────────────────
 export const updateBoard = createAction(
   '[Board] Update Board',
-  props<{ boardId: string; name: string; columnNames: string[] }>(),
+  props<{ boardId: string; name: string }>(),
 );
 export const updateBoardSuccess = createAction(
   '[Board] Update Board Success',
@@ -101,5 +98,61 @@ export const toggleSubtaskSuccess = createAction(
 );
 export const toggleSubtaskFailure = createAction(
   '[Task] Toggle Subtask Failure',
+  props<{ error: string }>(),
+);
+
+// ── Add Column ────────────────────────────────────────────────────────────────
+export const addColumn = createAction(
+  '[Column] Add Column',
+  props<{ boardId: string; name: string }>(),
+);
+export const addColumnSuccess = createAction(
+  '[Column] Add Column Success',
+  props<{ boardId: string; column: Column }>(),
+);
+export const addColumnFailure = createAction(
+  '[Column] Add Column Failure',
+  props<{ error: string }>(),
+);
+
+// ── Rename Column ────────────────────────────────────────────────────────────
+export const renameColumn = createAction(
+  '[Column] Rename Column',
+  props<{ boardId: string; columnId: string; name: string }>(),
+);
+export const renameColumnSuccess = createAction(
+  '[Column] Rename Column Success',
+  props<{ boardId: string; column: Column }>(),
+);
+export const renameColumnFailure = createAction(
+  '[Column] Rename Column Failure',
+  props<{ error: string }>(),
+);
+
+// ── Delete Column ────────────────────────────────────────────────────────────
+export const deleteColumn = createAction(
+  '[Column] Delete Column',
+  props<{ boardId: string; columnId: string }>(),
+);
+export const deleteColumnSuccess = createAction(
+  '[Column] Delete Column Success',
+  props<{ boardId: string; columnId: string }>(),
+);
+export const deleteColumnFailure = createAction(
+  '[Column] Delete Column Failure',
+  props<{ error: string }>(),
+);
+
+// ── Reorder Columns ───────────────────────────────────────────────────────────
+export const reorderColumns = createAction(
+  '[Column] Reorder Columns',
+  props<{ boardId: string; columnIds: string[] }>(),
+);
+export const reorderColumnsSuccess = createAction(
+  '[Column] Reorder Columns Success',
+  props<{ boardId: string; columnIds: string[] }>(),
+);
+export const reorderColumnsFailure = createAction(
+  '[Column] Reorder Columns Failure',
   props<{ error: string }>(),
 );

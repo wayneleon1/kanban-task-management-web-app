@@ -55,6 +55,15 @@
     @case ('delete-board') {
       <app-confirm-delete />
     }
+    @case ('add-column') {
+      <app-column-form />
+    }
+    @case ('rename-column') {
+      <app-column-form />
+    }
+    @case ('delete-column') {
+      <app-confirm-delete />
+    }
   }
 
   <!-- ── Global Error Toast ── -->

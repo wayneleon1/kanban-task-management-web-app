@@ -8,19 +8,26 @@ export type ModalType =
   | 'add-board'
   | 'edit-board'
   | 'delete-board'
+  | 'add-column'
+  | 'rename-column'
+  | 'delete-column'
   | null;
 
 export interface ModalState {
   type: ModalType;
   taskId?: string;
   boardId?: string;
+  columnId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ModalService {
   state = signal<ModalState>({ type: null });
 
-  open(type: Exclude<ModalType, null>, options?: { taskId?: string; boardId?: string }): void {
+  open(
+    type: Exclude<ModalType, null>,
+    options?: { taskId?: string; boardId?: string; columnId?: string },
+  ): void {
     this.state.set({ type, ...(options ?? {}) });
   }
 
