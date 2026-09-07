@@ -4,10 +4,10 @@ import { guestGuard } from './core/guards/guest.guard';
 import { NotFound } from './features/not-found/not-found';
 
 export const routes: Routes = [
-  // Default redirect to first board
+  // Default redirect — BoardsHome resolves to the user's first board (or an empty state)
   {
     path: '',
-    redirectTo: 'boards/platform-launch',
+    redirectTo: 'boards',
     pathMatch: 'full',
   },
   // Auth — public, but redirects an already-authenticated user away

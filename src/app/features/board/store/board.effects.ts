@@ -3,16 +3,13 @@ import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { Store } from '@ngrx/store';
-import { of } from 'rxjs';
-import { map, switchMap, catchError, tap } from 'rxjs/operators';
+import { Observable, forkJoin, from, of } from 'rxjs';
+import { catchError, concatMap, map, switchMap, tap, toArray } from 'rxjs/operators';
 
-import { Board } from '../../../core/models/board.model';
-import { generateId } from '../../../core/utils/id.utils';
+import { Board, Column, Subtask, Task } from '../../../core/models/board.model';
 import { ApiService } from '../../../core/services/api.service';
 import * as BoardActions from './board.actions';
 import { selectAllBoards, selectBoardEntities } from './board.selectors';
-
-const COLUMN_COLORS = ['#49C4E5', '#8471F2', '#67E2AE', '#E9A23B', '#F24E1E', '#935FC4', '#1ABCFE'];
 
 @Injectable()
 export class BoardEffects {
@@ -22,8 +19,7 @@ export class BoardEffects {
   private api = inject(ApiService);
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  LOAD BOARDS — GET /boards
-  //  Replaces the old localStorage.getItem logic.
+  //  LOAD BOARDS — GET /boards (nested columns + tasks)
   // ─────────────────────────────────────────────────────────────────────────
   loadBoards$ = createEffect(() =>
     this.actions$.pipe(
@@ -38,37 +34,31 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  ADD BOARD — POST /boards
-  //  Builds the full Board entity here (generates IDs), then persists it.
-  //  On success dispatches addBoardSuccess so the reducer adds it to state.
+  //  ADD BOARD — POST /boards, then POST each column sequentially
+  //  (sequential, not parallel, so the backend's position-by-count logic
+  //  can't race between concurrent column creates)
   // ─────────────────────────────────────────────────────────────────────────
   addBoard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(BoardActions.addBoard),
-      switchMap(({ name, columnNames }) => {
-        const board: Board = {
-          id: name.toLowerCase().replace(/\s+/g, '-') + '-' + generateId().slice(0, 4),
-          name,
-          columns: columnNames
-            .filter((n) => n.trim())
-            .map((colName, i) => ({
-              id: generateId(),
-              name: colName.trim(),
-              color: COLUMN_COLORS[i % COLUMN_COLORS.length],
-              tasks: [],
-            })),
-        };
-        return this.api.createBoard(board).pipe(
-          map((created) => BoardActions.addBoardSuccess({ board: created })),
+      switchMap(({ name, columnNames }) =>
+        this.api.createBoard(name).pipe(
+          switchMap((board) =>
+            this.createColumnsSequentially(board.id, columnNames).pipe(
+              map((columns) => ({ ...board, columns })),
+            ),
+          ),
+          tap(() => this.api.bustCache()),
+          map((board) => BoardActions.addBoardSuccess({ board })),
           catchError((err: Error) => of(BoardActions.addBoardFailure({ error: err.message }))),
-        );
-      }),
+        ),
+      ),
     ),
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  UPDATE BOARD — PUT /boards/:id
-  //  Reads current board from store, merges name + rebuilt columns, PUTs it.
+  //  UPDATE BOARD — PUT /boards/:id, then diff columnNames against the
+  //  board's existing columns (by name) to add/remove as needed.
   // ─────────────────────────────────────────────────────────────────────────
   updateBoard$ = createEffect(() =>
     this.actions$.pipe(
@@ -80,24 +70,12 @@ export class BoardEffects {
           return of(BoardActions.updateBoardFailure({ error: 'Board not found' }));
         }
 
-        const updatedColumns = columnNames
-          .filter((n) => n.trim())
-          .map((colName, i) => {
-            const col = existing.columns.find((c) => c.name === colName.trim());
-            return (
-              col ?? {
-                id: generateId(),
-                name: colName.trim(),
-                color: COLUMN_COLORS[i % COLUMN_COLORS.length],
-                tasks: [],
-              }
-            );
-          });
+        const desiredNames = columnNames.map((n) => n.trim()).filter(Boolean);
 
-        const updatedBoard: Board = { ...existing, name, columns: updatedColumns };
-
-        return this.api.updateBoard(updatedBoard).pipe(
-          map((board) => BoardActions.updateBoardSuccess({ board })),
+        return this.api.updateBoardName(boardId, name).pipe(
+          switchMap(() => this.syncColumns(boardId, existing.columns, desiredNames)),
+          tap(() => this.api.bustCache()),
+          map((columns) => BoardActions.updateBoardSuccess({ board: { ...existing, name, columns } })),
           catchError((err: Error) => of(BoardActions.updateBoardFailure({ error: err.message }))),
         );
       }),
@@ -112,6 +90,7 @@ export class BoardEffects {
       ofType(BoardActions.deleteBoard),
       switchMap(({ boardId }) =>
         this.api.deleteBoard(boardId).pipe(
+          tap(() => this.api.bustCache()),
           map(() => BoardActions.deleteBoardSuccess({ boardId })),
           catchError((err: Error) => of(BoardActions.deleteBoardFailure({ error: err.message }))),
         ),
@@ -120,9 +99,9 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  ADD TASK — PUT /boards/:id  (tasks are nested inside the board)
-  //  Builds the new task, merges it into the correct column, then PUTs the
-  //  full board back to json-server.
+  //  ADD TASK — POST /tasks
+  //  task.status carries the target column's *name* (existing convention);
+  //  resolved to a columnId before calling the API.
   // ─────────────────────────────────────────────────────────────────────────
   addTask$ = createEffect(() =>
     this.actions$.pipe(
@@ -130,29 +109,38 @@ export class BoardEffects {
       concatLatestFrom(() => this.store.select(selectBoardEntities)),
       switchMap(([{ boardId, task }, entities]) => {
         const board = entities[boardId];
-        if (!board) {
-          return of(BoardActions.addTaskFailure({ error: 'Board not found' }));
+        const column = board?.columns.find((c) => c.name === task.status);
+        if (!board || !column) {
+          return of(BoardActions.addTaskFailure({ error: 'Column not found' }));
         }
 
-        const newTask = { ...task, id: generateId() };
-        const updatedBoard: Board = {
-          ...board,
-          columns: board.columns.map((col) =>
-            col.name === newTask.status ? { ...col, tasks: [...col.tasks, newTask] } : col,
-          ),
-        };
-
-        return this.api.updateBoard(updatedBoard).pipe(
-          map((saved) => BoardActions.addTaskSuccess({ board: saved })),
-          catchError((err: Error) => of(BoardActions.addTaskFailure({ error: err.message }))),
-        );
+        return this.api
+          .createTask(column.id, {
+            title: task.title,
+            description: task.description,
+            dueDate: task.dueDate || undefined,
+            subtasks: task.subtasks.map((s) => ({ title: s.title })),
+          })
+          .pipe(
+            tap(() => this.api.bustCache()),
+            map((created) => {
+              const updatedBoard: Board = {
+                ...board,
+                columns: board.columns.map((c) =>
+                  c.id === column.id ? { ...c, tasks: [...c.tasks, created] } : c,
+                ),
+              };
+              return BoardActions.addTaskSuccess({ board: updatedBoard });
+            }),
+            catchError((err: Error) => of(BoardActions.addTaskFailure({ error: err.message }))),
+          );
       }),
     ),
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  UPDATE TASK — PUT /boards/:id
-  //  Moves the task between columns if status changed.
+  //  UPDATE TASK — PUT /tasks/:id for field/column changes, plus a diff-based
+  //  subtask sync (POST/PUT/DELETE) when `updates.subtasks` is provided.
   // ─────────────────────────────────────────────────────────────────────────
   updateTask$ = createEffect(() =>
     this.actions$.pipe(
@@ -160,35 +148,50 @@ export class BoardEffects {
       concatLatestFrom(() => this.store.select(selectBoardEntities)),
       switchMap(([{ boardId, taskId, updates }, entities]) => {
         const board = entities[boardId];
-        if (!board) {
-          return of(BoardActions.updateTaskFailure({ error: 'Board not found' }));
-        }
-
-        let current = null;
-        for (const col of board.columns) {
-          const found = col.tasks.find((t) => t.id === taskId);
-          if (found) {
-            current = found;
-            break;
-          }
-        }
-        if (!current) {
+        const currentColumn = board?.columns.find((c) => c.tasks.some((t) => t.id === taskId));
+        const currentTask = currentColumn?.tasks.find((t) => t.id === taskId);
+        if (!board || !currentColumn || !currentTask) {
           return of(BoardActions.updateTaskFailure({ error: 'Task not found' }));
         }
 
-        const updated = { ...current, ...updates };
-        const updatedBoard: Board = {
-          ...board,
-          columns: board.columns.map((col) => {
-            const without = col.tasks.filter((t) => t.id !== taskId);
-            return col.name === updated.status
-              ? { ...col, tasks: [...without, updated] }
-              : { ...col, tasks: without };
-          }),
-        };
+        const targetColumn = updates.status
+          ? (board.columns.find((c) => c.name === updates.status) ?? null)
+          : currentColumn;
+        if (!targetColumn) {
+          return of(BoardActions.updateTaskFailure({ error: 'Target column not found' }));
+        }
 
-        return this.api.updateBoard(updatedBoard).pipe(
-          map((saved) => BoardActions.updateTaskSuccess({ board: saved })),
+        const fields: Record<string, unknown> = {};
+        if (updates.title !== undefined) fields['title'] = updates.title;
+        if (updates.description !== undefined) fields['description'] = updates.description;
+        if (updates.dueDate !== undefined) fields['dueDate'] = updates.dueDate || null;
+        if (targetColumn.id !== currentColumn.id) fields['columnId'] = targetColumn.id;
+
+        const fieldUpdate$ = Object.keys(fields).length
+          ? this.api.updateTask(taskId, fields)
+          : of(currentTask);
+        const subtasks$ = updates.subtasks
+          ? this.syncSubtasks(taskId, currentTask.subtasks, updates.subtasks)
+          : of(currentTask.subtasks);
+
+        return forkJoin([fieldUpdate$, subtasks$]).pipe(
+          tap(() => this.api.bustCache()),
+          map(([updatedTask, subtasks]) => {
+            const finalTask: Task = { ...updatedTask, subtasks, status: targetColumn.name };
+            const updatedBoard: Board = {
+              ...board,
+              columns: board.columns.map((c) => {
+                if (c.id === currentColumn.id && c.id !== targetColumn.id) {
+                  return { ...c, tasks: c.tasks.filter((t) => t.id !== taskId) };
+                }
+                if (c.id === targetColumn.id) {
+                  return { ...c, tasks: [...c.tasks.filter((t) => t.id !== taskId), finalTask] };
+                }
+                return c;
+              }),
+            };
+            return BoardActions.updateTaskSuccess({ board: updatedBoard });
+          }),
           catchError((err: Error) => of(BoardActions.updateTaskFailure({ error: err.message }))),
         );
       }),
@@ -196,7 +199,7 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  DELETE TASK — PUT /boards/:id
+  //  DELETE TASK — DELETE /tasks/:id
   // ─────────────────────────────────────────────────────────────────────────
   deleteTask$ = createEffect(() =>
     this.actions$.pipe(
@@ -208,16 +211,18 @@ export class BoardEffects {
           return of(BoardActions.deleteTaskFailure({ error: 'Board not found' }));
         }
 
-        const updatedBoard: Board = {
-          ...board,
-          columns: board.columns.map((col) => ({
-            ...col,
-            tasks: col.tasks.filter((t) => t.id !== taskId),
-          })),
-        };
-
-        return this.api.updateBoard(updatedBoard).pipe(
-          map((saved) => BoardActions.deleteTaskSuccess({ board: saved })),
+        return this.api.deleteTask(taskId).pipe(
+          tap(() => this.api.bustCache()),
+          map(() => {
+            const updatedBoard: Board = {
+              ...board,
+              columns: board.columns.map((c) => ({
+                ...c,
+                tasks: c.tasks.filter((t) => t.id !== taskId),
+              })),
+            };
+            return BoardActions.deleteTaskSuccess({ board: updatedBoard });
+          }),
           catchError((err: Error) => of(BoardActions.deleteTaskFailure({ error: err.message }))),
         );
       }),
@@ -225,7 +230,7 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
-  //  TOGGLE SUBTASK — PUT /boards/:id
+  //  TOGGLE SUBTASK — PATCH /tasks/:id/subtasks/:subtaskId/toggle
   // ─────────────────────────────────────────────────────────────────────────
   toggleSubtask$ = createEffect(() =>
     this.actions$.pipe(
@@ -237,24 +242,18 @@ export class BoardEffects {
           return of(BoardActions.toggleSubtaskFailure({ error: 'Board not found' }));
         }
 
-        const updatedBoard: Board = {
-          ...board,
-          columns: board.columns.map((col) => ({
-            ...col,
-            tasks: col.tasks.map((task) => {
-              if (task.id !== taskId) return task;
-              return {
-                ...task,
-                subtasks: task.subtasks.map((st) =>
-                  st.id === subtaskId ? { ...st, isCompleted: !st.isCompleted } : st,
-                ),
-              };
-            }),
-          })),
-        };
-
-        return this.api.updateBoard(updatedBoard).pipe(
-          map((saved) => BoardActions.toggleSubtaskSuccess({ board: saved })),
+        return this.api.toggleSubtask(taskId, subtaskId).pipe(
+          tap(() => this.api.bustCache()),
+          map((updatedTask) => {
+            const updatedBoard: Board = {
+              ...board,
+              columns: board.columns.map((c) => ({
+                ...c,
+                tasks: c.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
+              })),
+            };
+            return BoardActions.toggleSubtaskSuccess({ board: updatedBoard });
+          }),
           catchError((err: Error) => of(BoardActions.toggleSubtaskFailure({ error: err.message }))),
         );
       }),
@@ -289,4 +288,83 @@ export class BoardEffects {
       ),
     { dispatch: false },
   );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  //  Helpers
+  // ─────────────────────────────────────────────────────────────────────────
+
+  private createColumnsSequentially(boardId: string, columnNames: string[]): Observable<Column[]> {
+    const names = columnNames.map((n) => n.trim()).filter(Boolean);
+    if (!names.length) {
+      return of([]);
+    }
+    return from(names).pipe(
+      concatMap((name) => this.api.createColumn(boardId, name)),
+      toArray(),
+    );
+  }
+
+  private syncColumns(
+    boardId: string,
+    existing: Column[],
+    desiredNames: string[],
+  ): Observable<Column[]> {
+    const toKeep = existing.filter((c) => desiredNames.includes(c.name));
+    const toRemove = existing.filter((c) => !desiredNames.includes(c.name));
+    const toAdd = desiredNames.filter((n) => !existing.some((c) => c.name === n));
+
+    const removals$ = from(toRemove).pipe(
+      concatMap((c) => this.api.deleteColumn(c.id)),
+      toArray(),
+    );
+    const additions$ = from(toAdd).pipe(
+      concatMap((name) => this.api.createColumn(boardId, name)),
+      toArray(),
+    );
+
+    return removals$.pipe(
+      switchMap(() => additions$),
+      map((created) => [...toKeep, ...created]),
+    );
+  }
+
+  private syncSubtasks(
+    taskId: string,
+    existing: Subtask[],
+    desired: { id: string; title: string }[],
+  ): Observable<Subtask[]> {
+    const existingIds = new Set(existing.map((s) => s.id));
+    const desiredIds = new Set(desired.map((s) => s.id));
+
+    const toRemove = existing.filter((s) => !desiredIds.has(s.id));
+    const toAdd = desired.filter((s) => !existingIds.has(s.id));
+    const toRename = desired.filter((s) => {
+      const match = existing.find((e) => e.id === s.id);
+      return !!match && match.title !== s.title;
+    });
+
+    const removals$ = from(toRemove).pipe(
+      concatMap((s) => this.api.deleteSubtask(taskId, s.id)),
+      toArray(),
+    );
+    const additions$ = from(toAdd).pipe(
+      concatMap((s) => this.api.addSubtask(taskId, s.title)),
+      toArray(),
+    );
+    const renames$ = from(toRename).pipe(
+      concatMap((s) => this.api.renameSubtask(taskId, s.id, s.title)),
+      toArray(),
+    );
+
+    if (!toRemove.length && !toAdd.length && !toRename.length) {
+      return of(existing);
+    }
+
+    return removals$.pipe(
+      switchMap(() => additions$),
+      switchMap(() => renames$),
+      switchMap(() => this.api.getTask(taskId)),
+      map((task) => task.subtasks),
+    );
+  }
 }

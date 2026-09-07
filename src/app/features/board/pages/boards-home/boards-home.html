@@ -1,0 +1,14 @@
+@if (loading()) {
+  <div class="board-empty" aria-live="polite" aria-busy="true">
+    <p class="board-empty__text text-heading-l">Loading your boards…</p>
+  </div>
+} @else if (boards().length === 0) {
+  <div class="board-empty">
+    <p class="board-empty__text text-heading-l">
+      You don't have any boards yet. Create one to get started.
+    </p>
+    <app-button variant="primary-lg" (btnClick)="modalService.open('add-board')">
+      + Create New Board
+    </app-button>
+  </div>
+}

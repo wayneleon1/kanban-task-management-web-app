@@ -1,10 +1,18 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, Subject } from 'rxjs';
-import { catchError, shareReplay, takeUntil } from 'rxjs/operators';
+import { Observable, Subject, catchError, map, shareReplay, takeUntil, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Board } from '../models/board.model';
+import { ApiEnvelope } from '../models/api-envelope.model';
+import { Board, Column, Task } from '../models/board.model';
+import {
+  BoardDto,
+  ColumnDto,
+  TaskDto,
+  mapBoard,
+  mapColumn,
+  mapTask,
+} from '../utils/board-mapper.util';
 import { extractErrorMessage } from '../utils/http-error.util';
 
 @Injectable({ providedIn: 'root' })
@@ -28,43 +36,129 @@ export class ApiService {
    */
   getBoards(): Observable<Board[]> {
     if (!this.boards$) {
-      this.boards$ = this.http
-        .get<Board[]>(`${this.base}/boards`)
-        .pipe(shareReplay(1), takeUntil(this.bustCache$), catchError(this.handleError));
+      this.boards$ = this.http.get<ApiEnvelope<{ boards: BoardDto[] }>>(`${this.base}/boards`).pipe(
+        map((res) => res.data.boards.map(mapBoard)),
+        shareReplay(1),
+        takeUntil(this.bustCache$),
+        catchError(this.handleError),
+      );
     }
     return this.boards$;
   }
 
-  /** GET /boards/:id */
-  getBoardById(id: string): Observable<Board> {
-    return this.http.get<Board>(`${this.base}/boards/${id}`).pipe(catchError(this.handleError));
+  createBoard(name: string): Observable<Board> {
+    return this.http.post<ApiEnvelope<{ board: BoardDto }>>(`${this.base}/boards`, { name }).pipe(
+      map((res) => mapBoard(res.data.board)),
+      catchError(this.handleError),
+    );
   }
 
-  /** POST /boards */
-  createBoard(board: Board): Observable<Board> {
-    return this.http.post<Board>(`${this.base}/boards`, board).pipe(catchError(this.handleError));
-  }
-
-  /**
-   * PUT /boards/:id
-   * Used for all board edits AND nested task mutations (add/update/delete/toggle).
-   * Busts the getBoards() cache after success so the next load reflects changes.
-   */
-  updateBoard(board: Board): Observable<Board> {
+  updateBoardName(boardId: string, name: string): Observable<Board> {
     return this.http
-      .put<Board>(`${this.base}/boards/${board.id}`, board)
-      .pipe(catchError(this.handleError));
+      .put<ApiEnvelope<{ board: BoardDto }>>(`${this.base}/boards/${boardId}`, { name })
+      .pipe(
+        map((res) => mapBoard(res.data.board)),
+        catchError(this.handleError),
+      );
   }
 
-  /** DELETE /boards/:id */
-  deleteBoard(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.base}/boards/${id}`).pipe(catchError(this.handleError));
+  deleteBoard(boardId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/boards/${boardId}`).pipe(catchError(this.handleError));
+  }
+
+  // ── Columns ──────────────────────────────────────────────────────────────
+
+  createColumn(boardId: string, name: string): Observable<Column> {
+    return this.http
+      .post<ApiEnvelope<{ column: ColumnDto }>>(`${this.base}/boards/${boardId}/columns`, { name })
+      .pipe(
+        map((res) => mapColumn(res.data.column)),
+        catchError(this.handleError),
+      );
+  }
+
+  deleteColumn(columnId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/columns/${columnId}`).pipe(catchError(this.handleError));
+  }
+
+  // ── Tasks ────────────────────────────────────────────────────────────────
+
+  getTask(taskId: string): Observable<Task> {
+    return this.http.get<ApiEnvelope<{ task: TaskDto }>>(`${this.base}/tasks/${taskId}`).pipe(
+      map((res) => mapTask(res.data.task)),
+      catchError(this.handleError),
+    );
+  }
+
+  createTask(
+    columnId: string,
+    input: { title: string; description?: string; dueDate?: string; subtasks?: { title: string }[] },
+  ): Observable<Task> {
+    return this.http
+      .post<ApiEnvelope<{ task: TaskDto }>>(`${this.base}/tasks`, { columnId, ...input })
+      .pipe(
+        map((res) => mapTask(res.data.task)),
+        catchError(this.handleError),
+      );
+  }
+
+  updateTask(taskId: string, updates: Record<string, unknown>): Observable<Task> {
+    return this.http.put<ApiEnvelope<{ task: TaskDto }>>(`${this.base}/tasks/${taskId}`, updates).pipe(
+      map((res) => mapTask(res.data.task)),
+      catchError(this.handleError),
+    );
+  }
+
+  deleteTask(taskId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/tasks/${taskId}`).pipe(catchError(this.handleError));
+  }
+
+  // ── Subtasks ─────────────────────────────────────────────────────────────
+
+  addSubtask(taskId: string, title: string): Observable<Task> {
+    return this.http
+      .post<ApiEnvelope<{ task: TaskDto }>>(`${this.base}/tasks/${taskId}/subtasks`, { title })
+      .pipe(
+        map((res) => mapTask(res.data.task)),
+        catchError(this.handleError),
+      );
+  }
+
+  renameSubtask(taskId: string, subtaskId: string, title: string): Observable<Task> {
+    return this.http
+      .put<ApiEnvelope<{ task: TaskDto }>>(`${this.base}/tasks/${taskId}/subtasks/${subtaskId}`, {
+        title,
+      })
+      .pipe(
+        map((res) => mapTask(res.data.task)),
+        catchError(this.handleError),
+      );
+  }
+
+  deleteSubtask(taskId: string, subtaskId: string): Observable<Task> {
+    return this.http
+      .delete<ApiEnvelope<{ task: TaskDto }>>(`${this.base}/tasks/${taskId}/subtasks/${subtaskId}`)
+      .pipe(
+        map((res) => mapTask(res.data.task)),
+        catchError(this.handleError),
+      );
+  }
+
+  toggleSubtask(taskId: string, subtaskId: string): Observable<Task> {
+    return this.http
+      .patch<ApiEnvelope<{ task: TaskDto }>>(
+        `${this.base}/tasks/${taskId}/subtasks/${subtaskId}/toggle`,
+        {},
+      )
+      .pipe(
+        map((res) => mapTask(res.data.task)),
+        catchError(this.handleError),
+      );
   }
 
   /**
    * Invalidates the getBoards() cache.
-   * Called by effects after any successful mutation so a fresh reload
-   * always fetches updated data from the server.
+   * Called after any successful mutation so the next load reflects changes.
    */
   bustCache(): void {
     this.boards$ = null;
@@ -73,9 +167,9 @@ export class ApiService {
 
   // ── Error Handler ────────────────────────────────────────────────────────
 
-  private handleError(err: HttpErrorResponse): Observable<never> {
+  private handleError = (err: Parameters<typeof extractErrorMessage>[0]): Observable<never> => {
     const message = extractErrorMessage(err);
     console.error('[ApiService]', message, err);
     return throwError(() => new Error(message));
-  }
+  };
 }
