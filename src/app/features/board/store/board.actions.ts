@@ -160,3 +160,45 @@ export const reorderColumnsFailure = createAction(
   '[Column] Reorder Columns Failure',
   props<{ error: string }>(),
 );
+
+// ── Add Collaborator ──────────────────────────────────────────────────────────
+export const addCollaborator = createAction(
+  '[Collaborator] Add Collaborator',
+  props<{ boardId: string; email: string; role: 'viewer' | 'editor' }>(),
+);
+export const addCollaboratorSuccess = createAction(
+  '[Collaborator] Add Collaborator Success',
+  props<{ boardId: string; board: Board }>(),
+);
+export const addCollaboratorFailure = createAction(
+  '[Collaborator] Add Collaborator Failure',
+  props<{ error: string }>(),
+);
+
+// ── Update Collaborator Role ──────────────────────────────────────────────────
+export const updateCollaboratorRole = createAction(
+  '[Collaborator] Update Collaborator Role',
+  props<{ boardId: string; userId: string; role: 'viewer' | 'editor' }>(),
+);
+export const updateCollaboratorRoleSuccess = createAction(
+  '[Collaborator] Update Collaborator Role Success',
+  props<{ boardId: string; board: Board }>(),
+);
+export const updateCollaboratorRoleFailure = createAction(
+  '[Collaborator] Update Collaborator Role Failure',
+  props<{ error: string }>(),
+);
+
+// ── Remove Collaborator ───────────────────────────────────────────────────────
+export const removeCollaborator = createAction(
+  '[Collaborator] Remove Collaborator',
+  props<{ boardId: string; userId: string }>(),
+);
+export const removeCollaboratorSuccess = createAction(
+  '[Collaborator] Remove Collaborator Success',
+  props<{ boardId: string; board: Board }>(),
+);
+export const removeCollaboratorFailure = createAction(
+  '[Collaborator] Remove Collaborator Failure',
+  props<{ error: string }>(),
+);

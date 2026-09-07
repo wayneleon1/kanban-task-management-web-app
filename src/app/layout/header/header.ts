@@ -1,11 +1,13 @@
-import { Component, inject, signal, ElementRef } from '@angular/core';
+import { Component, computed, inject, signal, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 
 import { Button } from '../../shared/components/button/button';
 import { LayoutService } from '../../core/services/layout.service';
 import { ModalService } from '../../core/services/modal.service';
+import { resolveBoardPermission } from '../../core/utils/board-permission.util';
 import { selectActiveBoard, selectActiveBoardId } from '../../features/board/store/board.selectors';
+import { selectCurrentUser } from '../../features/auth/store/auth.selectors';
 
 @Component({
   selector: 'app-header',
@@ -26,6 +28,10 @@ export class Header {
 
   activeBoard = this.store.selectSignal(selectActiveBoard);
   activeBoardId = this.store.selectSignal(selectActiveBoardId);
+  private authUser = this.store.selectSignal(selectCurrentUser);
+
+  permission = computed(() => resolveBoardPermission(this.authUser(), this.activeBoard()));
+  isOwner = computed(() => this.permission() === 'owner');
 
   get hasColumns(): boolean {
     return (this.activeBoard()?.columns.length ?? 0) > 0;
@@ -46,6 +52,12 @@ export class Header {
     this.boardMenuOpen.set(false);
     const boardId = this.activeBoardId();
     if (boardId) this.modalService.open('delete-board', { boardId });
+  }
+
+  openManageCollaborators(): void {
+    this.boardMenuOpen.set(false);
+    const boardId = this.activeBoardId();
+    if (boardId) this.modalService.open('manage-collaborators', { boardId });
   }
 
   onDocumentClick(event: Event): void {

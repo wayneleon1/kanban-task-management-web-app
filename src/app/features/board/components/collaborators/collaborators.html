@@ -1,0 +1,98 @@
+<app-modal>
+  <div class="collaborators">
+    <h2 class="collaborators__heading text-heading-l">Manage Collaborators</h2>
+
+    @if (board(); as b) {
+      <div class="collaborators__list">
+        @if (b.owner) {
+          <div class="collaborator-row">
+            <div class="collaborator-row__info">
+              <span class="collaborator-row__name text-heading-m">{{ b.owner.name }}</span>
+              <span class="collaborator-row__email text-body-m">{{ b.owner.email }}</span>
+            </div>
+            <span class="collaborator-row__badge text-body-m">Owner</span>
+          </div>
+        }
+        @for (collaborator of b.collaborators ?? []; track collaborator.user.id) {
+          <div class="collaborator-row">
+            <div class="collaborator-row__info">
+              <span class="collaborator-row__name text-heading-m">{{ collaborator.user.name }}</span>
+              <span class="collaborator-row__email text-body-m">{{ collaborator.user.email }}</span>
+            </div>
+            <div class="collaborator-row__actions">
+              <select
+                class="collaborator-row__role-select text-body-m"
+                [ngModel]="collaborator.role"
+                (ngModelChange)="onRoleChange(collaborator.user.id, $event)"
+              >
+                <option value="viewer">Viewer</option>
+                <option value="editor">Editor</option>
+              </select>
+              <button
+                type="button"
+                class="collaborator-row__remove-btn"
+                aria-label="Remove collaborator"
+                (click)="onRemove(collaborator.user.id)"
+              >
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path
+                    d="M12.728 2.272L2.272 12.728M2.272 2.272l10.456 10.456"
+                    stroke="#828FA3"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+        @if (!b.collaborators?.length) {
+          <p class="collaborators__empty text-body-m">No collaborators yet — invite someone below.</p>
+        }
+      </div>
+    }
+
+    <form #inviteForm="ngForm" (ngSubmit)="onInvite(inviteForm)" novalidate class="invite-form">
+      <div class="form-field">
+        <label class="form-label text-body-m" for="inviteEmail">Invite by email</label>
+        <input
+          id="inviteEmail"
+          type="email"
+          class="form-input text-body-l"
+          name="inviteEmail"
+          [(ngModel)]="inviteEmail"
+          required
+          email
+          placeholder="e.g. alex@example.com"
+          #emailCtrl="ngModel"
+          autocomplete="off"
+        />
+        @if (emailCtrl.invalid && emailCtrl.touched) {
+          <span class="form-error-inline text-body-l">Enter a valid email.</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="form-label text-body-m" for="inviteRole">Role</label>
+        <div class="select-wrapper">
+          <select
+            id="inviteRole"
+            name="inviteRole"
+            class="form-select text-body-l"
+            [(ngModel)]="inviteRole"
+          >
+            <option value="viewer">Viewer — read-only</option>
+            <option value="editor">Editor — can edit boards/tasks</option>
+          </select>
+          <svg class="select-arrow" width="10" height="7" viewBox="0 0 10 7" fill="none">
+            <path d="M1 1L5 5L9 1" stroke="#635FC7" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary-lg btn--full-width">Invite</button>
+    </form>
+
+    <button type="button" class="btn btn--ghost" (click)="onClose()">Close</button>
+  </div>
+</app-modal>

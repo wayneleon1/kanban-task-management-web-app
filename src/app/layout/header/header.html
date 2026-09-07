@@ -103,12 +103,17 @@
           <button class="board-menu-option text-body-l" (click)="openEditBoard()">
             Edit Board
           </button>
-          <button
-            class="board-menu-option board-menu-option--destructive text-body-l"
-            (click)="openDeleteBoard()"
-          >
-            Delete Board
-          </button>
+          @if (isOwner()) {
+            <button class="board-menu-option text-body-l" (click)="openManageCollaborators()">
+              Manage Collaborators
+            </button>
+            <button
+              class="board-menu-option board-menu-option--destructive text-body-l"
+              (click)="openDeleteBoard()"
+            >
+              Delete Board
+            </button>
+          }
         </div>
       }
     </div>

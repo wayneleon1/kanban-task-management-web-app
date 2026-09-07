@@ -354,6 +354,56 @@ export class BoardEffects {
   );
 
   // ─────────────────────────────────────────────────────────────────────────
+  //  ADD COLLABORATOR — POST /boards/:id/collaborators
+  // ─────────────────────────────────────────────────────────────────────────
+  addCollaborator$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(BoardActions.addCollaborator),
+      switchMap(({ boardId, email, role }) =>
+        this.api.addCollaborator(boardId, email, role).pipe(
+          tap(() => this.api.bustCache()),
+          map((board) => BoardActions.addCollaboratorSuccess({ boardId, board })),
+          catchError((err: Error) => of(BoardActions.addCollaboratorFailure({ error: err.message }))),
+        ),
+      ),
+    ),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  //  UPDATE COLLABORATOR ROLE — PUT /boards/:id/collaborators/:userId
+  // ─────────────────────────────────────────────────────────────────────────
+  updateCollaboratorRole$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(BoardActions.updateCollaboratorRole),
+      switchMap(({ boardId, userId, role }) =>
+        this.api.updateCollaboratorRole(boardId, userId, role).pipe(
+          tap(() => this.api.bustCache()),
+          map((board) => BoardActions.updateCollaboratorRoleSuccess({ boardId, board })),
+          catchError((err: Error) =>
+            of(BoardActions.updateCollaboratorRoleFailure({ error: err.message })),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  //  REMOVE COLLABORATOR — DELETE /boards/:id/collaborators/:userId
+  // ─────────────────────────────────────────────────────────────────────────
+  removeCollaborator$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(BoardActions.removeCollaborator),
+      switchMap(({ boardId, userId }) =>
+        this.api.removeCollaborator(boardId, userId).pipe(
+          tap(() => this.api.bustCache()),
+          map((board) => BoardActions.removeCollaboratorSuccess({ boardId, board })),
+          catchError((err: Error) => of(BoardActions.removeCollaboratorFailure({ error: err.message }))),
+        ),
+      ),
+    ),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
   //  Helpers
   // ─────────────────────────────────────────────────────────────────────────
 

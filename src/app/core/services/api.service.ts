@@ -66,6 +66,49 @@ export class ApiService {
     return this.http.delete<void>(`${this.base}/boards/${boardId}`).pipe(catchError(this.handleError));
   }
 
+  // ── Collaborators ────────────────────────────────────────────────────────
+  // Responses carry only owner/collaborators (no nested columns/tasks) —
+  // callers must merge into existing board state rather than replacing it.
+
+  addCollaborator(boardId: string, email: string, role: 'viewer' | 'editor'): Observable<Board> {
+    return this.http
+      .post<ApiEnvelope<{ board: BoardDto }>>(`${this.base}/boards/${boardId}/collaborators`, {
+        email,
+        role,
+      })
+      .pipe(
+        map((res) => mapBoard(res.data.board)),
+        catchError(this.handleError),
+      );
+  }
+
+  updateCollaboratorRole(
+    boardId: string,
+    userId: string,
+    role: 'viewer' | 'editor',
+  ): Observable<Board> {
+    return this.http
+      .put<ApiEnvelope<{ board: BoardDto }>>(
+        `${this.base}/boards/${boardId}/collaborators/${userId}`,
+        { role },
+      )
+      .pipe(
+        map((res) => mapBoard(res.data.board)),
+        catchError(this.handleError),
+      );
+  }
+
+  removeCollaborator(boardId: string, userId: string): Observable<Board> {
+    return this.http
+      .delete<ApiEnvelope<{ board: BoardDto }>>(
+        `${this.base}/boards/${boardId}/collaborators/${userId}`,
+      )
+      .pipe(
+        map((res) => mapBoard(res.data.board)),
+        catchError(this.handleError),
+      );
+  }
+
   // ── Columns ──────────────────────────────────────────────────────────────
 
   createColumn(boardId: string, name: string): Observable<Column> {

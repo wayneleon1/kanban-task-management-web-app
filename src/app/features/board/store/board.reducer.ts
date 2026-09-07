@@ -24,6 +24,19 @@ function withUpdatedColumns(
   return boardAdapter.updateOne({ id: boardId, changes: { columns: updater(board.columns) } }, state);
 }
 
+/**
+ * Merges a fresh owner/collaborators pair into a board, preserving its
+ * existing columns/tasks — the collaborator endpoints' responses don't
+ * include nested columns, so trusting them wholesale would wipe them out.
+ */
+function withUpdatedMembership(state: BoardState, boardId: string, source: Board): BoardState {
+  if (!state.entities[boardId]) return state;
+  return boardAdapter.updateOne(
+    { id: boardId, changes: { owner: source.owner, collaborators: source.collaborators } },
+    state,
+  );
+}
+
 export const boardReducer = createReducer(
   initialBoardState,
 
@@ -211,4 +224,45 @@ export const boardReducer = createReducer(
   })),
 
   on(BoardActions.reorderColumnsFailure, (state, { error }) => ({ ...state, loading: false, error })),
+
+  // ── Add Collaborator ───────────────────────────────────────────────────────
+  on(BoardActions.addCollaborator, (state) => ({ ...state, loading: true, error: null })),
+
+  on(BoardActions.addCollaboratorSuccess, (state, { boardId, board }) => ({
+    ...withUpdatedMembership(state, boardId, board),
+    loading: false,
+    error: null,
+  })),
+
+  on(BoardActions.addCollaboratorFailure, (state, { error }) => ({ ...state, loading: false, error })),
+
+  // ── Update Collaborator Role ───────────────────────────────────────────────
+  on(BoardActions.updateCollaboratorRole, (state) => ({ ...state, loading: true, error: null })),
+
+  on(BoardActions.updateCollaboratorRoleSuccess, (state, { boardId, board }) => ({
+    ...withUpdatedMembership(state, boardId, board),
+    loading: false,
+    error: null,
+  })),
+
+  on(BoardActions.updateCollaboratorRoleFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
+  // ── Remove Collaborator ────────────────────────────────────────────────────
+  on(BoardActions.removeCollaborator, (state) => ({ ...state, loading: true, error: null })),
+
+  on(BoardActions.removeCollaboratorSuccess, (state, { boardId, board }) => ({
+    ...withUpdatedMembership(state, boardId, board),
+    loading: false,
+    error: null,
+  })),
+
+  on(BoardActions.removeCollaboratorFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
 );
