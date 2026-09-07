@@ -3,11 +3,14 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { routes } from './app.routes';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { boardReducer } from './features/board/store/board.reducer';
 import { BoardEffects } from './features/board/store/board.effects';
+import { authReducer } from './features/auth/store/auth.reducer';
+import { AuthEffects } from './features/auth/store/auth.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,12 +18,13 @@ export const appConfig: ApplicationConfig = {
 
     // ── HTTP Client ─────────────────────────────────────────────────────────
     provideHttpClient(withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
 
     // ── NgRx Store ──────────────────────────────────────────────────────────
-    provideStore({ boards: boardReducer }),
+    provideStore({ boards: boardReducer, auth: authReducer }),
 
     // ── NgRx Effects ────────────────────────────────────────────────────────
-    provideEffects([BoardEffects]),
+    provideEffects([BoardEffects, AuthEffects]),
 
     // ── NgRx DevTools ───────────────────────────────────────────────────────
     provideStoreDevtools({

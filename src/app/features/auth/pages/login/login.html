@@ -1,0 +1,67 @@
+<div class="auth-page">
+  <div class="auth-page__card">
+    <div class="auth-page__logo">
+      <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="6" height="25" rx="2" fill="#635FC7" />
+        <rect x="9" y="0" width="6" height="25" rx="2" fill="#635FC7" opacity="0.75" />
+        <rect x="18" y="0" width="6" height="25" rx="2" fill="#635FC7" opacity="0.5" />
+      </svg>
+      <span class="auth-page__logo-text text-heading-xl">kanban</span>
+    </div>
+
+    <h1 class="auth-page__heading text-heading-l">Welcome back</h1>
+    <p class="auth-page__subheading text-body-l">Sign in to manage your boards.</p>
+
+    @if (apiError()) {
+      <div class="auth-page__error" role="alert">
+        <span class="text-body-m">{{ apiError() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form">
+      <div class="form-field">
+        <div class="form-field__label-row">
+          <label class="form-label text-body-m" for="email">Email</label>
+          @if (emailCtrl.invalid && emailCtrl.touched) {
+            <span class="form-error-inline text-body-l">{{ getEmailError() }}</span>
+          }
+        </div>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input text-body-l"
+          [class.form-input--error]="emailCtrl.invalid && emailCtrl.touched"
+          placeholder="e.g. alex@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-field">
+        <div class="form-field__label-row">
+          <label class="form-label text-body-m" for="password">Password</label>
+          @if (passwordCtrl.invalid && passwordCtrl.touched) {
+            <span class="form-error-inline text-body-l">{{ getPasswordError() }}</span>
+          }
+        </div>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="form-input text-body-l"
+          [class.form-input--error]="passwordCtrl.invalid && passwordCtrl.touched"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button type="submit" class="btn btn--primary-lg btn--full-width" [disabled]="loading()">
+        {{ loading() ? 'Signing in…' : 'Sign In' }}
+      </button>
+    </form>
+
+    <p class="auth-page__switch text-body-m">
+      Don't have an account? <a routerLink="/register" class="auth-page__link">Sign up</a>
+    </p>
+  </div>
+</div>

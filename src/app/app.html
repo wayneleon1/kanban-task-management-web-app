@@ -1,68 +1,73 @@
-<div class="app-shell">
-  <!-- Sidebar — desktop only, hidden on mobile -->
-  @if (layoutService.sidebarVisible() && !layoutService.isMobile()) {
-    <app-sidebar />
-  }
+@if (isAuthenticated()) {
+  <div class="app-shell">
+    <!-- Sidebar — desktop only, hidden on mobile -->
+    @if (layoutService.sidebarVisible() && !layoutService.isMobile()) {
+      <app-sidebar />
+    }
 
-  <div class="app-main">
-    <app-header />
-    <main class="app-content">
-      <router-outlet />
-    </main>
+    <div class="app-main">
+      <app-header />
+      <main class="app-content">
+        <router-outlet />
+      </main>
+    </div>
   </div>
-</div>
 
-<!-- ── Show Sidebar FAB (desktop only, when sidebar is hidden) ── -->
-@if (!layoutService.sidebarVisible() && !layoutService.isMobile()) {
-  <button class="show-sidebar-fab" aria-label="Show sidebar" (click)="layoutService.showSidebar()">
-    <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
-      <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
-        d="M15.815 4.434A9.055 9.055 0 0 0 8 0C4.88 0 2.1 1.698.185 4.434a1.333 1.333 0 0 0 0 1.132C2.1 8.302 4.88 10 8 10c3.12 0 5.9-1.698 7.815-4.434a1.333 1.333 0 0 0 0-1.132ZM8 8.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm0-5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"
-        fill="#fff"
-      />
-    </svg>
-  </button>
-}
+  <!-- ── Show Sidebar FAB (desktop only, when sidebar is hidden) ── -->
+  @if (!layoutService.sidebarVisible() && !layoutService.isMobile()) {
+    <button class="show-sidebar-fab" aria-label="Show sidebar" (click)="layoutService.showSidebar()">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+        <path
+          fill-rule="evenodd"
+          clip-rule="evenodd"
+          d="M15.815 4.434A9.055 9.055 0 0 0 8 0C4.88 0 2.1 1.698.185 4.434a1.333 1.333 0 0 0 0 1.132C2.1 8.302 4.88 10 8 10c3.12 0 5.9-1.698 7.815-4.434a1.333 1.333 0 0 0 0-1.132ZM8 8.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm0-5.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"
+          fill="#fff"
+        />
+      </svg>
+    </button>
+  }
 
-<!-- ── Mobile Board Select Menu ── -->
-@if (layoutService.mobileBoardMenuOpen()) {
-  <app-mobile-board-menu />
-}
+  <!-- ── Mobile Board Select Menu ── -->
+  @if (layoutService.mobileBoardMenuOpen()) {
+    <app-mobile-board-menu />
+  }
 
-<!-- ── Modals ── -->
-@switch (modalService.state().type) {
-  @case ('view-task') {
-    <app-view-task />
+  <!-- ── Modals ── -->
+  @switch (modalService.state().type) {
+    @case ('view-task') {
+      <app-view-task />
+    }
+    @case ('add-task') {
+      <app-task-form />
+    }
+    @case ('edit-task') {
+      <app-task-form />
+    }
+    @case ('delete-task') {
+      <app-confirm-delete />
+    }
+    @case ('add-board') {
+      <app-board-form />
+    }
+    @case ('edit-board') {
+      <app-board-form />
+    }
+    @case ('delete-board') {
+      <app-confirm-delete />
+    }
   }
-  @case ('add-task') {
-    <app-task-form />
-  }
-  @case ('edit-task') {
-    <app-task-form />
-  }
-  @case ('delete-task') {
-    <app-confirm-delete />
-  }
-  @case ('add-board') {
-    <app-board-form />
-  }
-  @case ('edit-board') {
-    <app-board-form />
-  }
-  @case ('delete-board') {
-    <app-confirm-delete />
-  }
-}
 
-<!-- ── Global Error Toast ── -->
-@if (error()) {
-  <div class="error-toast" role="alert">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
-      <path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-    </svg>
-    <span class="text-body-m">{{ error() }}</span>
-  </div>
+  <!-- ── Global Error Toast ── -->
+  @if (error()) {
+    <div class="error-toast" role="alert">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" />
+        <path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <span class="text-body-m">{{ error() }}</span>
+    </div>
+  }
+} @else {
+  <!-- Unauthenticated — bare outlet, auth pages own their full-screen layout -->
+  <router-outlet />
 }

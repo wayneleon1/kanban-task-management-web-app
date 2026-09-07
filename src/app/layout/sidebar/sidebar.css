@@ -102,6 +102,43 @@
   gap: var(--space-2);
 }
 
+/* ── User info + Logout ── */
+.sidebar__user {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+
+.sidebar__user-name {
+  color: var(--color-text-primary);
+}
+
+.sidebar__user-email {
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__logout-btn {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.sidebar__logout-btn:hover {
+  color: var(--color-primary-hover);
+}
+
 /* ── Theme Toggle container ── */
 .sidebar__theme-toggle {
   display: flex;

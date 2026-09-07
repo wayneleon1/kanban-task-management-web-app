@@ -23,15 +23,22 @@ export const boardReducer = createReducer(
     error: null,
   })),
 
-  on(BoardActions.loadBoardsSuccess, (state, { boards }) =>
-    boardAdapter.setAll(boards, {
+  on(BoardActions.loadBoardsSuccess, (state, { boards }) => {
+    // A reducer must never throw — guard against a malformed response (e.g. a
+    // backend returning a wrapped envelope instead of a bare array) so it
+    // degrades to an error state instead of permanently breaking the store's
+    // action stream for every feature.
+    if (!Array.isArray(boards)) {
+      return { ...state, loading: false, error: 'Received an unexpected response shape for boards.' };
+    }
+    return boardAdapter.setAll(boards, {
       ...state,
       loading: false,
       error: null,
       lastLoaded: Date.now(), // stamp the successful load time
       activeBoardId: state.activeBoardId ?? boards[0]?.id ?? null,
-    }),
-  ),
+    });
+  }),
 
   on(BoardActions.loadBoardsFailure, (state, { error }) => ({
     ...state,

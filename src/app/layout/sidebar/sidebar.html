@@ -60,6 +60,15 @@
 
   <!-- ── Footer ── -->
   <div class="sidebar__footer">
+    <!-- User info + Logout -->
+    @if (currentUser(); as user) {
+      <div class="sidebar__user">
+        <span class="sidebar__user-name text-heading-m">{{ user.name }}</span>
+        <span class="sidebar__user-email text-body-m">{{ user.email }}</span>
+        <button class="sidebar__logout-btn text-heading-m" (click)="logout()">Log Out</button>
+      </div>
+    }
+
     <!-- Theme Toggle -->
     <div class="sidebar__theme-toggle">
       <!-- Sun icon -->

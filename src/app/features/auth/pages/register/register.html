@@ -1,0 +1,117 @@
+<div class="auth-page">
+  <div class="auth-page__card">
+    <div class="auth-page__logo">
+      <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="6" height="25" rx="2" fill="#635FC7" />
+        <rect x="9" y="0" width="6" height="25" rx="2" fill="#635FC7" opacity="0.75" />
+        <rect x="18" y="0" width="6" height="25" rx="2" fill="#635FC7" opacity="0.5" />
+      </svg>
+      <span class="auth-page__logo-text text-heading-xl">kanban</span>
+    </div>
+
+    <h1 class="auth-page__heading text-heading-l">Create your account</h1>
+    <p class="auth-page__subheading text-body-l">Start organizing your work with boards.</p>
+
+    @if (apiError()) {
+      <div class="auth-page__error" role="alert">
+        <span class="text-body-m">{{ apiError() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form">
+      <div class="form-field">
+        <div class="form-field__label-row">
+          <label class="form-label text-body-m" for="name">Name</label>
+          @if (nameCtrl.invalid && nameCtrl.touched) {
+            <span class="form-error-inline text-body-l">{{ getNameError() }}</span>
+          }
+        </div>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="form-input text-body-l"
+          [class.form-input--error]="nameCtrl.invalid && nameCtrl.touched"
+          placeholder="e.g. Alex Morgan"
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="form-field">
+        <div class="form-field__label-row">
+          <label class="form-label text-body-m" for="email">Email</label>
+          @if (emailCtrl.invalid && emailCtrl.touched) {
+            <span class="form-error-inline text-body-l">{{ getEmailError() }}</span>
+          }
+        </div>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input text-body-l"
+          [class.form-input--error]="emailCtrl.invalid && emailCtrl.touched"
+          placeholder="e.g. alex@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-field">
+        <div class="form-field__label-row">
+          <label class="form-label text-body-m" for="password">Password</label>
+          @if (passwordCtrl.invalid && passwordCtrl.touched) {
+            <span class="form-error-inline text-body-l">{{ getPasswordError() }}</span>
+          }
+        </div>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="form-input text-body-l"
+          [class.form-input--error]="passwordCtrl.invalid && passwordCtrl.touched"
+          placeholder="At least 8 characters"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <div class="form-field">
+        <div class="form-field__label-row">
+          <label class="form-label text-body-m" for="confirmPassword">Confirm password</label>
+          @if (confirmPasswordCtrl.touched && getConfirmPasswordError()) {
+            <span class="form-error-inline text-body-l">{{ getConfirmPasswordError() }}</span>
+          }
+        </div>
+        <input
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          class="form-input text-body-l"
+          [class.form-input--error]="confirmPasswordCtrl.touched && getConfirmPasswordError()"
+          placeholder="Re-enter your password"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label text-body-m" for="role">Account type</label>
+        <div class="select-wrapper">
+          <select id="role" formControlName="role" class="form-select text-body-l">
+            <option value="editor">Editor — can create and edit boards</option>
+            <option value="viewer">Viewer — read-only until invited to a board</option>
+          </select>
+          <svg class="select-arrow" width="10" height="7" viewBox="0 0 10 7" fill="none">
+            <path d="M1 1L5 5L9 1" stroke="#635FC7" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+        <span class="form-hint text-body-m">You can also be added as a collaborator on someone else's board.</span>
+      </div>
+
+      <button type="submit" class="btn btn--primary-lg btn--full-width" [disabled]="loading()">
+        {{ loading() ? 'Creating account…' : 'Create Account' }}
+      </button>
+    </form>
+
+    <p class="auth-page__switch text-body-m">
+      Already have an account? <a routerLink="/login" class="auth-page__link">Sign in</a>
+    </p>
+  </div>
+</div>

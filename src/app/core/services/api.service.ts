@@ -5,6 +5,7 @@ import { catchError, shareReplay, takeUntil } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 import { Board } from '../models/board.model';
+import { extractErrorMessage } from '../utils/http-error.util';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -73,14 +74,7 @@ export class ApiService {
   // ── Error Handler ────────────────────────────────────────────────────────
 
   private handleError(err: HttpErrorResponse): Observable<never> {
-    let message: string;
-
-    if (err.status === 0) {
-      message = 'Cannot reach the server. Is json-server running on port 3000?';
-    } else {
-      message = `Server error ${err.status}: ${err.message}`;
-    }
-
+    const message = extractErrorMessage(err);
     console.error('[ApiService]', message, err);
     return throwError(() => new Error(message));
   }

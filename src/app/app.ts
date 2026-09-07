@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 
@@ -17,6 +17,8 @@ import {
   selectBoardsLoading,
   selectBoardsAreFresh,
 } from './features/board/store/board.selectors';
+import * as AuthActions from './features/auth/store/auth.actions';
+import { selectIsAuthenticated } from './features/auth/store/auth.selectors';
 
 @Component({
   selector: 'app-root',
@@ -39,6 +41,8 @@ export class App implements OnInit {
   layoutService = inject(LayoutService);
   modalService = inject(ModalService);
 
+  isAuthenticated = this.store.selectSignal(selectIsAuthenticated);
+
   error = this.store.selectSignal(selectBoardsError);
   loading = this.store.selectSignal(selectBoardsLoading);
 
@@ -46,9 +50,15 @@ export class App implements OnInit {
   // if the store is already populated (e.g. hot module reload, back navigation)
   private isFresh = this.store.selectSignal(selectBoardsAreFresh);
 
-  ngOnInit(): void {
-    if (!this.isFresh()) {
+  // Boards require an authenticated request — load once a session exists,
+  // covering both a fresh login and a restored session after page refresh.
+  private loadBoardsOnceAuthenticated = effect(() => {
+    if (this.isAuthenticated() && !this.isFresh()) {
       this.store.dispatch(loadBoards());
     }
+  });
+
+  ngOnInit(): void {
+    this.store.dispatch(AuthActions.restoreSession());
   }
 }

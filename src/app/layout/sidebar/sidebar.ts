@@ -6,6 +6,8 @@ import { LayoutService } from '../../core/services/layout.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ModalService } from '../../core/services/modal.service';
 import { selectAllBoards } from '../../features/board/store/board.selectors';
+import * as AuthActions from '../../features/auth/store/auth.actions';
+import { selectCurrentUser } from '../../features/auth/store/auth.selectors';
 
 @Component({
   selector: 'app-sidebar',
@@ -21,4 +23,9 @@ export class Sidebar {
   modalService = inject(ModalService);
 
   boards = this.store.selectSignal(selectAllBoards);
+  currentUser = this.store.selectSignal(selectCurrentUser);
+
+  logout(): void {
+    this.store.dispatch(AuthActions.logout());
+  }
 }
