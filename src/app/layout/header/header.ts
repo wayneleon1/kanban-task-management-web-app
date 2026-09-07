@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { Button } from '../../shared/components/button/button';
 import { LayoutService } from '../../core/services/layout.service';
 import { ModalService } from '../../core/services/modal.service';
-import { resolveBoardPermission } from '../../core/utils/board-permission.util';
+import { hasAtLeast, resolveBoardPermission } from '../../core/utils/board-permission.util';
 import { selectActiveBoard, selectActiveBoardId } from '../../features/board/store/board.selectors';
 import { selectCurrentUser } from '../../features/auth/store/auth.selectors';
 
@@ -32,6 +32,8 @@ export class Header {
 
   permission = computed(() => resolveBoardPermission(this.authUser(), this.activeBoard()));
   isOwner = computed(() => this.permission() === 'owner');
+  canEdit = computed(() => hasAtLeast(this.permission(), 'editor'));
+  canView = computed(() => hasAtLeast(this.permission(), 'viewer'));
 
   get hasColumns(): boolean {
     return (this.activeBoard()?.columns.length ?? 0) > 0;
@@ -58,6 +60,12 @@ export class Header {
     this.boardMenuOpen.set(false);
     const boardId = this.activeBoardId();
     if (boardId) this.modalService.open('manage-collaborators', { boardId });
+  }
+
+  openActivity(): void {
+    this.boardMenuOpen.set(false);
+    const boardId = this.activeBoardId();
+    if (boardId) this.modalService.open('view-activity', { boardId });
   }
 
   onDocumentClick(event: Event): void {

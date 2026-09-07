@@ -35,26 +35,28 @@
         </li>
       }
 
-      <!-- Create new board -->
-      <li>
-        <button class="sidebar__create-btn" (click)="modalService.open('add-board')">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.889 2.889 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.221V8.444H1.333Zm8.889 6.222H13.11c.859 0 1.556-.697 1.556-1.556V8.445h-4.444v6.222Zm4.444-7.556V2.89c0-.859-.697-1.556-1.556-1.556H2.89c-.859 0-1.556.697-1.556 1.556v4.222H14.666Z"
-              fill="currentColor"
-            />
-          </svg>
-          <span class="text-heading-m">+ Create New Board</span>
-        </button>
-      </li>
+      <!-- Create new board — a global viewer can't own boards -->
+      @if (canCreateBoard) {
+        <li>
+          <button class="sidebar__create-btn" (click)="modalService.open('add-board')">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.889 2.889 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.221V8.444H1.333Zm8.889 6.222H13.11c.859 0 1.556-.697 1.556-1.556V8.445h-4.444v6.222Zm4.444-7.556V2.89c0-.859-.697-1.556-1.556-1.556H2.89c-.859 0-1.556.697-1.556 1.556v4.222H14.666Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span class="text-heading-m">+ Create New Board</span>
+          </button>
+        </li>
+      }
     </ul>
   </nav>
 
@@ -78,7 +80,7 @@
       <button
         class="theme-toggle__switch"
         [class.theme-toggle__switch--dark]="themeService.theme() === 'dark'"
-        (click)="themeService.toggleTheme()"
+        (click)="toggleTheme()"
         aria-label="Toggle theme"
       >
         <span class="theme-toggle__knob"></span>

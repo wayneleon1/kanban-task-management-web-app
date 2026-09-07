@@ -11,6 +11,7 @@ import { TaskForm } from './features/board/components/task-form/task-form';
 import { BoardForm } from './features/board/components/board-form/board-form';
 import { ColumnForm } from './features/board/components/column-form/column-form';
 import { Collaborators } from './features/board/components/collaborators/collaborators';
+import { Activity } from './features/board/components/activity/activity';
 import { ConfirmDelete } from './shared/components/confirm-delete/confirm-delete';
 import { MobileBoardMenu } from './layout/mobile-board-menu/mobile-board-menu';
 import { loadBoards } from './features/board/store/board.actions';
@@ -33,6 +34,7 @@ import { selectIsAuthenticated } from './features/auth/store/auth.selectors';
     BoardForm,
     ColumnForm,
     Collaborators,
+    Activity,
     ConfirmDelete,
     MobileBoardMenu,
   ],

@@ -12,6 +12,7 @@ import { Store } from '@ngrx/store';
 
 import { generateId } from '../../../../core/utils/id.utils';
 import { BoardMember } from '../../../../core/models/board.model';
+import { hasAtLeast, resolveBoardPermission } from '../../../../core/utils/board-permission.util';
 import {
   uniqueTitleValidator,
   futureDateValidator,
@@ -20,6 +21,7 @@ import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.
 import * as BoardActions from '../../store/board.actions';
 import { TaskDraft } from '../../store/board.actions';
 import { selectBoardEntities } from '../../store/board.selectors';
+import { selectCurrentUser } from '../../../auth/store/auth.selectors';
 
 @Component({
   selector: 'app-task-form-page',
@@ -44,6 +46,11 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
 
   board = computed(() => this.allEntities()[this.id()] ?? null);
   statusOptions = computed(() => this.board()?.columns.map((c) => c.name) ?? []);
+
+  private authUser = this.store.selectSignal(selectCurrentUser);
+  private canEditBoard = computed(() =>
+    hasAtLeast(resolveBoardPermission(this.authUser(), this.board()), 'editor'),
+  );
 
   // Assignee choices: the board's owner plus any collaborators
   boardMembers = computed<BoardMember[]>(() => {
@@ -85,6 +92,11 @@ export class TaskFormPage implements OnInit, CanComponentDeactivate {
   }
 
   ngOnInit(): void {
+    if (!this.canEditBoard()) {
+      this.router.navigate(['/boards', this.id()]);
+      return;
+    }
+
     // uniqueTitleValidator receives a BoardLookupFn — reads from store signal
     this.titleCtrl.addValidators(
       uniqueTitleValidator(

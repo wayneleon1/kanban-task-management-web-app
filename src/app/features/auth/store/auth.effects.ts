@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 
 import { AuthApiService } from '../../../core/services/auth-api.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { TokenStorageService } from '../../../core/services/token-storage.service';
 import * as AuthActions from './auth.actions';
 
@@ -14,6 +15,7 @@ export class AuthEffects {
   private router = inject(Router);
   private authApi = inject(AuthApiService);
   private tokenStorage = inject(TokenStorageService);
+  private themeService = inject(ThemeService);
 
   register$ = createEffect(() =>
     this.actions$.pipe(
@@ -44,6 +46,21 @@ export class AuthEffects {
       this.actions$.pipe(
         ofType(AuthActions.registerSuccess, AuthActions.loginSuccess),
         tap(({ token }) => this.tokenStorage.setToken(token)),
+      ),
+    { dispatch: false },
+  );
+
+  // Applies the account's saved theme whenever a session is established —
+  // covers fresh login/register and a restored session after page refresh.
+  applyThemeOnAuthSuccess$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(
+          AuthActions.registerSuccess,
+          AuthActions.loginSuccess,
+          AuthActions.restoreSessionSuccess,
+        ),
+        tap(({ user }) => this.themeService.setTheme(user.themePreference)),
       ),
     { dispatch: false },
   );

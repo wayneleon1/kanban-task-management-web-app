@@ -9,3 +9,11 @@ export function formatDueDate(dueDate: string): string {
     timeZone: 'UTC',
   }).format(date);
 }
+
+/** Formats a full ISO datetime (e.g. activity timestamps) in the viewer's local time. */
+export function formatDateTime(iso: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(iso));
+}

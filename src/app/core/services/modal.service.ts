@@ -12,6 +12,7 @@ export type ModalType =
   | 'rename-column'
   | 'delete-column'
   | 'manage-collaborators'
+  | 'view-activity'
   | null;
 
 export interface ModalState {

@@ -4,12 +4,14 @@ import { Store } from '@ngrx/store';
 import { BoardColumn } from '../../components/board-column/board-column';
 import { Button } from '../../../../shared/components/button/button';
 import { ModalService } from '../../../../core/services/modal.service';
+import { hasAtLeast, resolveBoardPermission } from '../../../../core/utils/board-permission.util';
 import { reorderColumns, setActiveBoard } from '../../store/board.actions';
 import {
   selectBoardEntities,
   selectBoardsLoading,
   selectBoardsError,
 } from '../../store/board.selectors';
+import { selectCurrentUser } from '../../../auth/store/auth.selectors';
 
 @Component({
   selector: 'app-board-detail',
@@ -29,6 +31,11 @@ export class BoardDetail {
   board = computed(() => this.allEntities()[this.id()] ?? null);
   loading = this.store.selectSignal(selectBoardsLoading);
   error = this.store.selectSignal(selectBoardsError);
+
+  private authUser = this.store.selectSignal(selectCurrentUser);
+  canEdit = computed(() =>
+    hasAtLeast(resolveBoardPermission(this.authUser(), this.board()), 'editor'),
+  );
 
   constructor() {
     effect(() => {

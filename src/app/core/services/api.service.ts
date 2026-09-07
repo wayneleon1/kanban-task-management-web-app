@@ -3,12 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, Subject, catchError, map, shareReplay, takeUntil, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { ActivityEntry } from '../models/activity.model';
 import { ApiEnvelope } from '../models/api-envelope.model';
 import { Board, Column, Task } from '../models/board.model';
 import {
+  ActivityDto,
   BoardDto,
   ColumnDto,
   TaskDto,
+  mapActivity,
   mapBoard,
   mapColumn,
   mapTask,
@@ -58,6 +61,15 @@ export class ApiService {
       .put<ApiEnvelope<{ board: BoardDto }>>(`${this.base}/boards/${boardId}`, { name })
       .pipe(
         map((res) => mapBoard(res.data.board)),
+        catchError(this.handleError),
+      );
+  }
+
+  getActivity(boardId: string): Observable<ActivityEntry[]> {
+    return this.http
+      .get<ApiEnvelope<{ activity: ActivityDto[] }>>(`${this.base}/boards/${boardId}/activity`)
+      .pipe(
+        map((res) => res.data.activity.map(mapActivity).filter((a): a is ActivityEntry => !!a)),
         catchError(this.handleError),
       );
   }

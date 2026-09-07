@@ -1,3 +1,4 @@
+import { ActivityEntry } from '../models/activity.model';
 import { Board, BoardMember, Collaborator, Column, Subtask, Task } from '../models/board.model';
 
 export interface UserRefDto {
@@ -76,6 +77,19 @@ export function mapColumn(dto: ColumnDto): Column {
 function mapCollaborator(dto: CollaboratorDto): Collaborator | undefined {
   const user = mapUserRef(dto.user);
   return user ? { user, role: dto.role } : undefined;
+}
+
+export interface ActivityDto {
+  _id: string;
+  actor: UserRefDto | string;
+  message: string;
+  createdAt: string;
+}
+
+export function mapActivity(dto: ActivityDto): ActivityEntry | undefined {
+  const actor = mapUserRef(dto.actor);
+  if (!actor) return undefined;
+  return { id: dto._id, actor, message: dto.message, createdAt: dto.createdAt };
 }
 
 export function mapBoard(dto: BoardDto): Board {

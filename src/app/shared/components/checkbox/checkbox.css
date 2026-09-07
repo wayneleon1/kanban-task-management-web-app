@@ -15,6 +15,14 @@
   background-color: var(--color-checkbox-hover-bg);
 }
 
+.checkbox-wrapper--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.checkbox-wrapper--disabled:hover {
+  background-color: var(--color-checkbox-bg);
+}
+
 /* Hide native checkbox */
 .checkbox-input {
   position: absolute;

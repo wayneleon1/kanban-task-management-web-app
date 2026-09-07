@@ -7,8 +7,10 @@ import { Checkbox } from '../../../../shared/components/checkbox/checkbox';
 import { Dropdown } from '../../../../shared/components/dropdown/dropdown';
 import { ModalService } from '../../../../core/services/modal.service';
 import { formatDueDate } from '../../../../core/utils/date.util';
+import { hasAtLeast, resolveBoardPermission } from '../../../../core/utils/board-permission.util';
 import * as BoardActions from '../../store/board.actions';
 import { selectAllBoards } from '../../store/board.selectors';
+import { selectCurrentUser } from '../../../auth/store/auth.selectors';
 
 @Component({
   selector: 'app-view-task',
@@ -27,6 +29,13 @@ export class ViewTask {
   menuOpen = signal(false);
 
   private allBoards = this.store.selectSignal(selectAllBoards);
+  private authUser = this.store.selectSignal(selectCurrentUser);
+
+  canEdit = computed(() => {
+    const boardId = this.taskResult()?.boardId;
+    const board = boardId ? (this.allBoards().find((b) => b.id === boardId) ?? null) : null;
+    return hasAtLeast(resolveBoardPermission(this.authUser(), board), 'editor');
+  });
 
   taskResult = computed(() => {
     const taskId = this.modalService.state().taskId;
@@ -56,6 +65,7 @@ export class ViewTask {
   });
 
   toggleSubtask(subtaskId: string): void {
+    if (!this.canEdit()) return;
     const result = this.taskResult();
     if (!result) return;
     this.store.dispatch(
@@ -68,6 +78,7 @@ export class ViewTask {
   }
 
   onStatusChange(newStatus: string): void {
+    if (!this.canEdit()) return;
     const result = this.taskResult();
     if (!result) return;
     this.store.dispatch(
@@ -81,6 +92,7 @@ export class ViewTask {
 
   openEditTask(): void {
     this.menuOpen.set(false);
+    if (!this.canEdit()) return;
     const result = this.taskResult();
     this.modalService.close();
     if (result) {
@@ -90,6 +102,7 @@ export class ViewTask {
 
   openDeleteTask(): void {
     this.menuOpen.set(false);
+    if (!this.canEdit()) return;
     this.modalService.open('delete-task', { taskId: this.modalService.state().taskId });
   }
 

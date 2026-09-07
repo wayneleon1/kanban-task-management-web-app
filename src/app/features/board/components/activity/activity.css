@@ -1,0 +1,67 @@
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.activity__heading {
+  color: var(--color-text-primary);
+}
+
+.activity__status {
+  color: var(--color-text-secondary);
+}
+.activity__status--error {
+  color: var(--color-destructive);
+}
+
+.activity__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.activity-entry {
+  padding: var(--space-3);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.activity-entry__message {
+  color: var(--color-text-primary);
+}
+
+.activity-entry__actor {
+  color: var(--color-text-primary);
+  margin-right: var(--space-2);
+}
+
+.activity-entry__timestamp {
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.btn--ghost {
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  padding: 8px;
+  width: 100%;
+}
+.btn--ghost:hover {
+  color: var(--color-primary);
+}

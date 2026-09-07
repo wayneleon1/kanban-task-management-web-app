@@ -18,6 +18,7 @@ export class BoardColumn {
   boardId = input.required<string>();
   isFirst = input<boolean>(false);
   isLast = input<boolean>(false);
+  canEdit = input<boolean>(false);
 
   moveLeft = output<void>();
   moveRight = output<void>();

@@ -5,31 +5,33 @@
       <div class="view-task__header">
         <h2 class="view-task__title text-heading-l">{{ t.title }}</h2>
 
-        <div class="view-task__menu">
-          <button
-            class="view-task__menu-trigger"
-            aria-label="Task options"
-            (click)="menuOpen.update((v) => !v); $event.stopPropagation()"
-          >
-            <svg width="5" height="20" viewBox="0 0 5 20" fill="none">
-              <circle cx="2.308" cy="2.308" r="2.308" fill="#828FA3" />
-              <circle cx="2.308" cy="10" r="2.308" fill="#828FA3" />
-              <circle cx="2.308" cy="17.692" r="2.308" fill="#828FA3" />
-            </svg>
-          </button>
+        @if (canEdit()) {
+          <div class="view-task__menu">
+            <button
+              class="view-task__menu-trigger"
+              aria-label="Task options"
+              (click)="menuOpen.update((v) => !v); $event.stopPropagation()"
+            >
+              <svg width="5" height="20" viewBox="0 0 5 20" fill="none">
+                <circle cx="2.308" cy="2.308" r="2.308" fill="#828FA3" />
+                <circle cx="2.308" cy="10" r="2.308" fill="#828FA3" />
+                <circle cx="2.308" cy="17.692" r="2.308" fill="#828FA3" />
+              </svg>
+            </button>
 
-          @if (menuOpen()) {
-            <div class="view-task__menu-dropdown">
-              <button class="menu-option text-body-l" (click)="openEditTask()">Edit Task</button>
-              <button
-                class="menu-option menu-option--destructive text-body-l"
-                (click)="openDeleteTask()"
-              >
-                Delete Task
-              </button>
-            </div>
-          }
-        </div>
+            @if (menuOpen()) {
+              <div class="view-task__menu-dropdown">
+                <button class="menu-option text-body-l" (click)="openEditTask()">Edit Task</button>
+                <button
+                  class="menu-option menu-option--destructive text-body-l"
+                  (click)="openDeleteTask()"
+                >
+                  Delete Task
+                </button>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <!-- ── Description ── -->
@@ -47,6 +49,7 @@
             @for (subtask of t.subtasks; track subtask.id) {
               <app-checkbox
                 [checked]="subtask.isCompleted"
+                [disabled]="!canEdit()"
                 (checkedChange)="toggleSubtask(subtask.id)"
               >
                 {{ subtask.title }}
@@ -76,12 +79,19 @@
 
       <!-- ── Current Status ── -->
       <div class="view-task__status">
-        <app-dropdown
-          label="Current Status"
-          [options]="statusOptions()"
-          [selected]="t.status"
-          (selectedChange)="onStatusChange($event)"
-        />
+        @if (canEdit()) {
+          <app-dropdown
+            label="Current Status"
+            [options]="statusOptions()"
+            [selected]="t.status"
+            (selectedChange)="onStatusChange($event)"
+          />
+        } @else {
+          <p class="view-task__detail text-body-l">
+            <span class="view-task__detail-label text-heading-s">Current Status</span>
+            {{ t.status }}
+          </p>
+        }
       </div>
     </div>
   }

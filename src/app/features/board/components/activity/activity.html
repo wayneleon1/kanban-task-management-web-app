@@ -1,0 +1,27 @@
+<app-modal>
+  <div class="activity">
+    <h2 class="activity__heading text-heading-l">Activity</h2>
+
+    @if (loading()) {
+      <p class="activity__status text-body-l">Loading…</p>
+    } @else if (error()) {
+      <p class="activity__status activity__status--error text-body-l">{{ error() }}</p>
+    } @else if (entries().length === 0) {
+      <p class="activity__status text-body-l">No activity yet.</p>
+    } @else {
+      <ul class="activity__list">
+        @for (entry of entries(); track entry.id) {
+          <li class="activity-entry">
+            <p class="activity-entry__message text-body-l">
+              <span class="activity-entry__actor text-heading-m">{{ entry.actor.name }}</span>
+              {{ entry.message }}
+            </p>
+            <p class="activity-entry__timestamp text-body-m">{{ formatTimestamp(entry.createdAt) }}</p>
+          </li>
+        }
+      </ul>
+    }
+
+    <button type="button" class="btn btn--ghost" (click)="onClose()">Close</button>
+  </div>
+</app-modal>

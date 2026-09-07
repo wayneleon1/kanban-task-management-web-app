@@ -37,4 +37,13 @@ export class AuthApiService {
       catchError((err) => throwError(() => new Error(extractErrorMessage(err)))),
     );
   }
+
+  updateThemePreference(themePreference: 'light' | 'dark'): Observable<User> {
+    return this.http
+      .patch<ApiEnvelope<{ user: User }>>(`${this.base}/auth/me`, { themePreference })
+      .pipe(
+        map((res) => res.data.user),
+        catchError((err) => throwError(() => new Error(extractErrorMessage(err)))),
+      );
+  }
 }

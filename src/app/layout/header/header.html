@@ -61,61 +61,70 @@
        RIGHT — Actions
        ══════════════════════════════════════ -->
   <div class="header__actions">
-    <!-- Desktop: full text button -->
-    @if (!layoutService.isMobile()) {
-      <app-button variant="primary-lg" [disabled]="!hasColumns" (btnClick)="openAddTask()">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        </svg>
-        <span>Add New Task</span>
-      </app-button>
-    } @else {
-      <!-- Mobile: circular "+" icon button -->
-      <button
-        class="header__mobile-add-btn"
-        [class.header__mobile-add-btn--disabled]="!hasColumns"
-        [disabled]="!hasColumns"
-        aria-label="Add new task"
-        (click)="openAddTask()"
-      >
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M6 0v12M0 6h12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
-        </svg>
-      </button>
+    @if (canEdit()) {
+      <!-- Desktop: full text button -->
+      @if (!layoutService.isMobile()) {
+        <app-button variant="primary-lg" [disabled]="!hasColumns" (btnClick)="openAddTask()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <span>Add New Task</span>
+        </app-button>
+      } @else {
+        <!-- Mobile: circular "+" icon button -->
+        <button
+          class="header__mobile-add-btn"
+          [class.header__mobile-add-btn--disabled]="!hasColumns"
+          [disabled]="!hasColumns"
+          aria-label="Add new task"
+          (click)="openAddTask()"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 0v12M0 6h12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      }
     }
 
-    <!-- Three-dot menu (both desktop and mobile) -->
-    <div class="header__board-menu">
-      <button
-        class="header__menu-btn"
-        aria-label="Board options"
-        (click)="boardMenuOpen.update((v) => !v); $event.stopPropagation()"
-      >
-        <svg width="5" height="20" viewBox="0 0 5 20" fill="none">
-          <circle cx="2.308" cy="2.308" r="2.308" fill="#828FA3" />
-          <circle cx="2.308" cy="10" r="2.308" fill="#828FA3" />
-          <circle cx="2.308" cy="17.692" r="2.308" fill="#828FA3" />
-        </svg>
-      </button>
+    <!-- Three-dot menu (both desktop and mobile) — visible to any board member; items are gated individually -->
+    @if (canView()) {
+      <div class="header__board-menu">
+        <button
+          class="header__menu-btn"
+          aria-label="Board options"
+          (click)="boardMenuOpen.update((v) => !v); $event.stopPropagation()"
+        >
+          <svg width="5" height="20" viewBox="0 0 5 20" fill="none">
+            <circle cx="2.308" cy="2.308" r="2.308" fill="#828FA3" />
+            <circle cx="2.308" cy="10" r="2.308" fill="#828FA3" />
+            <circle cx="2.308" cy="17.692" r="2.308" fill="#828FA3" />
+          </svg>
+        </button>
 
-      @if (boardMenuOpen()) {
-        <div class="header__board-menu-dropdown">
-          <button class="board-menu-option text-body-l" (click)="openEditBoard()">
-            Edit Board
-          </button>
-          @if (isOwner()) {
-            <button class="board-menu-option text-body-l" (click)="openManageCollaborators()">
-              Manage Collaborators
+        @if (boardMenuOpen()) {
+          <div class="header__board-menu-dropdown">
+            <button class="board-menu-option text-body-l" (click)="openActivity()">
+              View Activity
             </button>
-            <button
-              class="board-menu-option board-menu-option--destructive text-body-l"
-              (click)="openDeleteBoard()"
-            >
-              Delete Board
-            </button>
-          }
-        </div>
-      }
-    </div>
+            @if (canEdit()) {
+              <button class="board-menu-option text-body-l" (click)="openEditBoard()">
+                Edit Board
+              </button>
+            }
+            @if (isOwner()) {
+              <button class="board-menu-option text-body-l" (click)="openManageCollaborators()">
+                Manage Collaborators
+              </button>
+              <button
+                class="board-menu-option board-menu-option--destructive text-body-l"
+                (click)="openDeleteBoard()"
+              >
+                Delete Board
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
   </div>
 </header>

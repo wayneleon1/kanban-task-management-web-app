@@ -8,6 +8,7 @@ import { Component, input, output } from '@angular/core';
 })
 export class Checkbox {
   checked = input<boolean>(false);
+  disabled = input<boolean>(false);
   checkedChange = output<boolean>();
 
   onChange(event: Event): void {
