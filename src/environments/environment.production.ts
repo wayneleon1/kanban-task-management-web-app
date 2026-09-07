@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://my-production-api.com/api',
+  apiUrl: 'https://backend-kanban-task-management.vercel.app/api',
 };
